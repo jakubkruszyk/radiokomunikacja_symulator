@@ -1,25 +1,26 @@
 import PySimpleGUI as sg
-import props
 import globals as gb
+from materials import materials_list
 
 
 def draw_scene_tab() -> list[list]:
-    materials_names = [m.name for m in props.materials_list]
+    materials_names = [m.name for m in materials_list]
     properties_layout = [[sg.Text(name), sg.Text(value, key=f"property_{name}")]
                          for name, value in
-                         zip(props.materials_list[0]._fields, props.materials_list[0])
+                         zip(materials_list[0]._fields, materials_list[0])
                          if name != "name"]
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
                          [sg.Button("Draw", key="draw"), sg.Button("Edit", key="edit"),
                           sg.Button("Update", key="update", visible=False)],
+                         [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.scale)],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
                          [sg.Text("x2:"), sg.Input(key="x2", size=5), sg.Text("y2:"), sg.Input(key="y2", size=5)],
                          [sg.Text("Width:"), sg.Input(key="width", size=5, default_text="1")],
                          [sg.Combo(materials_names, key="material_list", enable_events=True,
                                    default_value=materials_names[0])],
                          [sg.Column(properties_layout, scrollable=True, size=(150, 200))],
-                         [sg.Button("Save", key="save")]]
+                         [sg.Button("Save", key="save"), sg.Button("Load", key="load")]]
 
     return draw_scene_layout
 

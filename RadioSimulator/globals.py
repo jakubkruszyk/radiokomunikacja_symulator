@@ -18,7 +18,15 @@ BUTTON_INACTIVE_COLOR = "#283b5b"
 # ======================================================================================================================
 graph = None
 current_mode = "dummy"
+
+# on scene objects
 walls = []
+transmitters = []
+
+# scene parameters
+scale = 1
+
+# common mode variables
 current_sub_mode = None
 
 # draw scene mode variables

@@ -1,9 +1,10 @@
 import PySimpleGUI as sg
 import globals as gb
 import math
-from props import Wall, materials_list
+from props import Wall
 from geometrics import point_line_distance
-from files import save_scene
+from files import save_scene, load_scene
+from materials import materials_list
 
 
 # ======================================================================================================================
@@ -108,3 +109,6 @@ def draw_scene_routine(app, event, values):
 
     elif event == "save":
         save_scene(gb.walls)
+
+    elif event == "load":
+        load_scene()
