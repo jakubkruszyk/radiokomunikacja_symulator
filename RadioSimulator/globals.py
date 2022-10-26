@@ -17,7 +17,7 @@ BUTTON_INACTIVE_COLOR = "#283b5b"
 # Global variables
 # ======================================================================================================================
 graph = None
-current_mode = "dummy"
+current_mode = "draw_scene"
 
 # on scene objects
 walls = []

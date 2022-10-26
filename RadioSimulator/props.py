@@ -26,3 +26,17 @@ class Wall:
         self.material = material
         self.line_id = line_id
         self.width = width
+
+    # r = d - 2(d dot n)*n n->normalized
+
+
+class Transmitter:
+    def __init__(self,
+                 point: tuple[int, int],
+                 dir_v: tuple[float, float],
+                 graph_id: int,
+                 power: float):
+        self.point = point
+        self.dir_v = dir_v
+        self.power = power
+        self.graph_id = graph_id

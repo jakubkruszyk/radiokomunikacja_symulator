@@ -11,7 +11,8 @@ def draw_scene_tab() -> list[list]:
                          if name != "name"]
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
-                         [sg.Button("Draw", key="draw"), sg.Button("Edit", key="edit"),
+                         [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
+                          sg.Button("Edit", key="edit"),
                           sg.Button("Update", key="update", visible=False)],
                          [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.scale)],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
@@ -33,8 +34,8 @@ def layout() -> list[list]:
                       [sg.Button("Hide", key="Hide")],
                       [sg.Button("Add", key="Add")]]
 
-    side_menu = [[sg.Column(dummy_side_tab, key="dummy_tab"), sg.Column(draw_scene_tab(), visible=False,
-                                                                        key="draw_scene_tab")]]
+    side_menu = [[sg.Column(dummy_side_tab, key="dummy_tab", visible=False),
+                  sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab")]]
 
     top_menu = [sg.Button('Draw scene', key="draw_scene"), sg.Button("Option2", key="dummy")]
 

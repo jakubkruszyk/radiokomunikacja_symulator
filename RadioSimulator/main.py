@@ -19,7 +19,7 @@ while True:
         draw_scene_routine(app, event, values)
 
     # common routines
-    elif event in ("draw_scene", "dummy"):
+    if event in ("draw_scene", "dummy"):
         app[f"{event}_tab"].update(visible=True)
         app[f"{gb.current_mode}_tab"].update(visible=False)
         gb.current_mode = event
