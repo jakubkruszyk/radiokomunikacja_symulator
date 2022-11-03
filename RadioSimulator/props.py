@@ -33,10 +33,8 @@ class Wall:
 class Transmitter:
     def __init__(self,
                  point: tuple[int, int],
-                 dir_v: tuple[float, float],
                  graph_id: int,
                  power: float):
         self.point = point
-        self.dir_v = dir_v
         self.power = power
         self.graph_id = graph_id

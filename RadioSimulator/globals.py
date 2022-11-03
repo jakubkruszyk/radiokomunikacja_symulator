@@ -4,6 +4,9 @@
 WALL_COLOR = "#ffffff"
 WALL_WIDTH = 5
 
+TRANSMITTER_COLOR = "#ff0000"
+TRANSMITTER_SIZE = 6
+
 SCENE_SIZE = (500, 300)  # size of scene in pixels
 SCENE_GRID = (20, 20)  # size of one rectangle of grid in pixels
 SIMULATION_GRID = ()  # size of one rectangle of grid in pixels
@@ -31,6 +34,6 @@ current_sub_mode = None
 
 # draw scene mode variables
 last_click = None
-edit_wall = None
+edit_prop = None
 
 

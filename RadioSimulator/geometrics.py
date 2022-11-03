@@ -13,6 +13,9 @@ def abc(x1: int,
         y1(int): y-coordinate of first point.
         x2(int): x-coordinate of second point.
         y2(int): y-coordinate of second point.
+
+    Returns:
+        tuple[float, float, float]
     """
     a = (y2 - y1) / (x2 - x1)
     b = y2 - a * x2
@@ -27,6 +30,9 @@ def intersection(line1: tuple[int, int, int, int],
     Args:
         line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
         line2(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of second line
+
+    Returns:
+        tuple[float, float]
     """
     a1, b1, c1 = abc(*line1)
     a2, b2, c2 = abc(*line2)
@@ -45,6 +51,9 @@ def point_line_distance(point: tuple[int, int],
     Args:
         point: (x, y) coordinates of point.
         line: (x1, y1, x2, y2) coordinates of two points of line
+
+    Return:
+        float
     """
     if line[0] == line[2]:  # line is vertical
         return abs(point[0] - line[0])
@@ -52,3 +61,18 @@ def point_line_distance(point: tuple[int, int],
         a, b, c = abc(*line)
         x, y = point
         return abs(a*x + b*y + c)/math.sqrt(a**2 + b**2)
+
+
+def point_point_distance(point1: tuple[int, int],
+                         point2: tuple[int, int]) -> float:
+    """
+    Returns distance between two points
+
+    Args:
+        point1: (x, y) coordinates of first point
+        point2: (x, y) coordinates of second point
+
+    Returns:
+        float
+    """
+    return math.sqrt((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2)
