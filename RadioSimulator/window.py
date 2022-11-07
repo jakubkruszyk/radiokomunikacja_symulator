@@ -18,9 +18,8 @@ def draw_scene_tab() -> list[list]:
     draw_transmitter_layout = [[sg.Text("Transmitter power"), sg.Input(key="power", size=5, default_text="1")]]
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
-                         [sg.Button("Draw", key="draw", button_color=gb.BUTTON_ACTIVE_COLOR),
-                          sg.Button("Add T", key="transmitter"), sg.Button("Edit", key="edit"),
-                          sg.Button("Update", key="update", visible=False)],
+                         [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
+                          sg.Button("Edit", key="edit"), sg.Button("Update", key="update", visible=False)],
                          [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.scale)],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
                          [sg.Text("x2:"), sg.Input(key="x2", size=5), sg.Text("y2:"), sg.Input(key="y2", size=5)],
@@ -31,18 +30,22 @@ def draw_scene_tab() -> list[list]:
     return draw_scene_layout
 
 
+def single_ray_tab() -> list[list]:
+    single_layout = [[sg.Button("Draw ray", key="draw_ray")],
+                     [sg.Button("Calculate", key="calc_single")]]
+
+    return single_layout
+
+
 def layout() -> list[list]:
     """
      Returns layout of main window.
     """
-    dummy_side_tab = [[sg.Button("Show", key="Show")],
-                      [sg.Button("Hide", key="Hide")],
-                      [sg.Button("Add", key="Add")]]
+    side_menu = [[sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab"),
+                  sg.Column(single_ray_tab(), visible=False, key="single_ray_tab")]]
 
-    side_menu = [[sg.Column(dummy_side_tab, key="dummy_tab", visible=False),
-                  sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab")]]
-
-    top_menu = [sg.Button('Draw scene', key="draw_scene"), sg.Button("Option2", key="dummy")]
+    top_menu = [sg.Button('Draw scene', key="draw_scene"),
+                sg.Button("Single ray", key="single_ray")]
 
     main_layout = [[top_menu],
                    [sg.Column(side_menu), sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",

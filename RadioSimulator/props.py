@@ -1,4 +1,5 @@
 from collections import namedtuple
+import math
 
 Material = namedtuple("Material", ["name",
                                    "param1", "param2"])
@@ -26,8 +27,17 @@ class Wall:
         self.material = material
         self.line_id = line_id
         self.width = width
+        self.normal = self.calc_normal()
 
-    # r = d - 2(d dot n)*n n->normalized
+    def calc_normal(self):
+        dx = self.points[0] - self.points[2]
+        dy = self.points[1] - self.points[3]
+        n = (-dy, dx)
+        n_len = math.sqrt(n[0]**2 + n[1]**2)
+        n = (n[0]/n_len, n[1]/n_len)  # normalize
+        if n[0] > 0:
+            n = (-n[0], -n[1])
+        return n
 
 
 class Transmitter:

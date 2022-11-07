@@ -76,3 +76,22 @@ def point_point_distance(point1: tuple[int, int],
         float
     """
     return math.sqrt((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2)
+
+
+def reflection_vec(vec: tuple[float, float],
+                   n: tuple[float, float]) -> tuple[float, float]:
+    """
+    Returns reflected vector from line with given normal vector.
+
+    Args:
+        vec: (dx, dy) vector that will be reflected
+        n: (dx, dy) normal vector of wall (must be normalized)
+
+    Returns:
+        tuple[float, float]
+    """
+    # r = d - 2(d dot n)*n,  n->normalized
+    dot = 2 * (vec[0] * n[0] + vec[1] * n[1])
+    dot_n = (n[0]*dot, n[1]*dot)
+    r = (vec[0]-dot_n[0], vec[1]-dot_n[1])
+    return r
