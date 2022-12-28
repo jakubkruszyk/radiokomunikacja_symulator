@@ -1,5 +1,4 @@
 import window
-import PySimpleGUI as sg
 from routines import *
 
 lines = []

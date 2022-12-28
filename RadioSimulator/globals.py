@@ -19,6 +19,10 @@ GRID_DOT_COLOR = "#969696"
 BUTTON_ACTIVE_COLOR = "#50b800"
 BUTTON_INACTIVE_COLOR = "#283b5b"
 
+# scene parameters
+SCALE = 1
+FLOAT_COMP = 0.05
+
 # ======================================================================================================================
 # Global variables
 # ======================================================================================================================
@@ -35,9 +39,6 @@ walls = list()
 transmitters = list()
 rays = list()
 
-# scene parameters
-scale = 1
-float_comp = 0.05
 
 # common mode variables
 current_sub_mode = None

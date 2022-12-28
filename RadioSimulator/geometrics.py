@@ -1,5 +1,6 @@
 import math
-from globals import float_comp
+from globals import FLOAT_COMP
+
 
 def abc(x1: int,
         y1: int,
@@ -59,9 +60,9 @@ def intersection2(line1: tuple[int, int, int, int],
     x3, y3, x4, y4 = line2
     # formulas from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
     denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
-    Px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denominator
-    Py = ((x1*y2 - y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)) / denominator
-    return Px, Py
+    px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denominator
+    py = ((x1*y2 - y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)) / denominator
+    return px, py
 
 
 def point_line_distance(point: tuple[int, int],
@@ -149,4 +150,4 @@ def point_on_line(line: tuple[float, float, float, float],
     endpoint2_dist = point_point_distance(line[2:], point)
     line_dist = point_point_distance(line[0:2], line[2:])
     diff = line_dist - (endpoint1_dist + endpoint2_dist)
-    return abs(diff) <= float_comp
+    return abs(diff) <= FLOAT_COMP

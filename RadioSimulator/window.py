@@ -20,7 +20,7 @@ def draw_scene_tab() -> list[list]:
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
                          [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
                           sg.Button("Edit", key="edit"), sg.Button("Update", key="update", visible=False)],
-                         [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.scale)],
+                         [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.SCALE)],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
                          [sg.Text("x2:"), sg.Input(key="x2", size=5), sg.Text("y2:"), sg.Input(key="y2", size=5)],
                          [sg.Column(draw_line_layout, key="draw_line_layout", visible=True),
