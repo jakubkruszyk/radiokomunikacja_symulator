@@ -1,8 +1,10 @@
 import PySimpleGUI as sg
 import globals as gb
 import math
+
+from RadioSimulator.props import Material
 from props import Wall, Transmitter
-from geometrics import point_line_distance, point_point_distance
+from ray import Ray
 from files import save_scene, load_scene
 from materials import materials_list
 
@@ -10,10 +12,14 @@ from materials import materials_list
 # ======================================================================================================================
 # Draw scene mode
 # ======================================================================================================================
+def point_quantization(point: tuple[int, int]):
+    return (gb.SCENE_GRID[0] * math.floor(point[0] / gb.SCENE_GRID[0] + 0.5),
+            gb.SCENE_GRID[1] * math.floor(point[1] / gb.SCENE_GRID[1] + 0.5))
+
+
 def draw_wall(app, event, values):
     # coordinates after snapping - basic quantization based on SCENE_GRID size
-    values_s = (gb.SCENE_GRID[0] * math.floor(values[event][0] / gb.SCENE_GRID[0] + 0.5),
-                gb.SCENE_GRID[1] * math.floor(values[event][1] / gb.SCENE_GRID[1] + 0.5))
+    values_s = point_quantization(values[event])
 
     if gb.last_click:
         # draw walls and add Wall objects to list
@@ -35,8 +41,7 @@ def draw_wall(app, event, values):
 
 
 def draw_transmitter(event, values):
-    values_s = (gb.SCENE_GRID[0] * math.floor(values[event][0] / gb.SCENE_GRID[0] + 0.5),
-                gb.SCENE_GRID[1] * math.floor(values[event][1] / gb.SCENE_GRID[1] + 0.5))
+    values_s = point_quantization(values[event])
 
     circle_id = gb.graph.draw_point(values_s, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
     try:
@@ -68,18 +73,12 @@ def show_transmitter_layout(app):
 
 
 def edit_wall(app, event, values):
-    # calculate distance from last click to all walls
-    distances = [(point_line_distance(values[event], wall.points), wall) for wall in gb.walls]
-    # calculate distance from last click to all transmitters
-    distances_t = [(point_point_distance(values[event], transmitter.point), transmitter) for transmitter in gb.transmitters]
-    # filter results by size of wall/ transmitter
-    snap_walls = [wall for wall in distances if wall[0] <= gb.WALL_WIDTH]
-    snap_transmitters = [transmitter for transmitter in distances_t if transmitter[0] <= gb.TRANSMITTER_SIZE]
-    snap_combined = snap_walls + snap_transmitters
-    if snap_combined:
-        # sort by distance
-        snap_combined = sorted(snap_combined, key=lambda x: x[0])
-        gb.edit_prop = snap_combined[0][1]
+    # get ids of objects that user clicked on
+    objects = gb.graph.get_figures_at_location(values[event])
+    # check walls, transmitter lists for matching ids
+    filtered = [o for o in (*gb.walls, *gb.transmitters) if o.graph_id in objects]
+    if filtered:
+        gb.edit_prop = filtered[0]
         if type(gb.edit_prop) == Wall:
             show_line_layout(app)
             app["update"].update(visible=True)
@@ -114,7 +113,7 @@ def draw_scene_routine(app, event, values):
 
     elif event == "reset_scene":
         for line in gb.walls:
-            gb.graph.delete_figure(line.line_id)
+            gb.graph.delete_figure(line.graph_id)
         gb.walls.clear()
 
     elif event == "draw":
@@ -138,24 +137,49 @@ def draw_scene_routine(app, event, values):
         app["update"].update(visible=True)
 
     elif event == "material_list":
-        material = [m for m in materials_list if m.name == values[event]][0]
+        material: Material = [m for m in materials_list if m.name == values[event]][0]
         for name, value in zip(material._fields, material):
             if name != "name":
                 app[f"property_{name}"].update(value)
 
     elif event == "update":
-        points = (values["x1"], values["y1"], values["x2"], values["y2"])
-        try:
-            points = tuple(int(p) for p in points)
-        except ValueError:
-            sg.popup_error("Coordinates from inputs are not integers!")
-            return
-        gb.edit_prop.points = points
-        material = [m for m in materials_list if m.name == values["material_list"]][0]
-        gb.edit_prop.material = material
-        gb.graph.delete_figure(gb.edit_prop.line_id)
-        line_id = gb.graph.draw_line(points[0:2], points[2:], width=gb.WALL_WIDTH, color=gb.WALL_COLOR)
-        gb.edit_prop.line_id = line_id
+        if type(gb.edit_prop) == Wall:
+            points = (values["x1"], values["y1"], values["x2"], values["y2"])
+            try:
+                points = tuple(int(p) for p in points)
+            except ValueError:
+                sg.popup_error("Coordinates from inputs are not integers!")
+                return
+            gb.edit_prop.points = points
+            material = [m for m in materials_list if m.name == values["material_list"]][0]
+            try:
+                width = float(values["width"])
+            except ValueError:
+                width = 1
+            gb.graph.delete_figure(gb.edit_prop.graph_id)
+            line_id = gb.graph.draw_line(points[0:2], points[2:], width=gb.WALL_WIDTH, color=gb.WALL_COLOR)
+            gb.edit_prop.graph_id = line_id
+            gb.edit_prop.material = material
+            gb.edit_prop.width = width
+            gb.edit_prop = None
+
+        elif type(gb.edit_prop) == Transmitter:
+            points = (values["x1"], values["y1"])
+            try:
+                points = tuple(int(p) for p in points if p != "")
+            except ValueError:
+                sg.popup_error("Coordinates from inputs are not integers!")
+                return
+            gb.edit_prop.point = points
+            try:
+                power = float(values["power"])
+            except ValueError:
+                power = 1
+            gb.graph.delete_figure(gb.edit_prop.graph_id)
+            transmitter_id = gb.graph.draw_point(points, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
+            gb.edit_prop.power = power
+            gb.edit_prop.graph_id = transmitter_id
+            gb.edit_prop = None
 
     elif event == "save":
         save_scene(gb.walls)
@@ -169,4 +193,23 @@ def draw_scene_routine(app, event, values):
 # ======================================================================================================================
 def single_ray_routine(app, event, values):
     if event == "graph":
-        pass
+        if gb.last_click:
+            vec = (values[event][0] - gb.last_click.point[0],
+                   values[event][1] - gb.last_click.point[1])
+            gb.rays.append(Ray(gb.last_click, vec, 10))
+            gb.rays[-1].propagate(gb.walls)
+            draw_ray(gb.rays[-1])
+            gb.last_click = None
+        else:
+            figures = gb.graph.get_figures_at_location(values[event])
+            transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+            if transmitter_list:
+                gb.last_click = transmitter_list[0]
+
+
+def draw_ray(ray: Ray):
+    sources = [ray.transmitter.point] + [line[0] for line in ray.reflections_list]
+    destinations = [line[0] for line in ray.reflections_list]
+    for src, dst in zip(sources, destinations):
+        gb.graph.draw_line(src, dst, width=gb.RAY_SIZE, color=gb.RAY_COLOR)
+    pass

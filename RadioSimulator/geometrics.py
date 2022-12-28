@@ -1,5 +1,5 @@
 import math
-
+from globals import float_comp
 
 def abc(x1: int,
         y1: int,
@@ -25,7 +25,7 @@ def abc(x1: int,
 def intersection(line1: tuple[int, int, int, int],
                  line2: tuple[int, int, int, int]) -> tuple[float, float]:
     """
-    Returns x and y coordinates of intersection of two walls and angle between them.
+    Returns x and y coordinates of intersection of two lines.
 
     Args:
         line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
@@ -41,6 +41,27 @@ def intersection(line1: tuple[int, int, int, int],
     y = (c1 * a2 - c2 * a1) / (a1 * b2 - a2 - b1)
 
     return x, y
+
+
+def intersection2(line1: tuple[int, int, int, int],
+                  line2: tuple[int, int, int, int]) -> tuple[float, float]:
+    """
+        Returns x and y coordinates of intersection of two lines.
+
+        Args:
+            line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
+            line2(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of second line
+
+        Returns:
+            tuple[float, float]
+        """
+    x1, y1, x2, y2 = line1
+    x3, y3, x4, y4 = line2
+    # formulas from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
+    denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
+    Px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denominator
+    Py = ((x1*y2 - y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)) / denominator
+    return Px, Py
 
 
 def point_line_distance(point: tuple[int, int],
@@ -63,8 +84,8 @@ def point_line_distance(point: tuple[int, int],
         return abs(a*x + b*y + c)/math.sqrt(a**2 + b**2)
 
 
-def point_point_distance(point1: tuple[int, int],
-                         point2: tuple[int, int]) -> float:
+def point_point_distance(point1: tuple[float, float],
+                         point2: tuple[float, float]) -> float:
     """
     Returns distance between two points
 
@@ -95,3 +116,37 @@ def reflection_vec(vec: tuple[float, float],
     dot_n = (n[0]*dot, n[1]*dot)
     r = (vec[0]-dot_n[0], vec[1]-dot_n[1])
     return r
+
+
+def vec_normalize(vec: tuple[float, float]) -> tuple[float, float]:
+    """
+    Function that normalize given vector.
+    Args:
+        vec: vector to be normalized
+
+    Returns:
+        Normalized vector as tuple.
+    """
+    vec_len = math.sqrt(vec[0]**2 + vec[1]**2)
+    return vec[0] / vec_len, vec[1] / vec_len
+
+
+def point_on_line(line: tuple[float, float, float, float],
+                  point: tuple[float, float]) -> bool:
+    """
+        Checks if given point is located on given line fragment.
+
+        Args:
+            line: Wall object to compare to.
+            point: Point in space that will be compared to Wall
+
+        Returns:
+            True when point is on wall, else False
+        """
+    # uses comparisions between distances from point to endpoints and between endpoints
+    # https://stackoverflow.com/questions/17692922/check-is-a-point-x-y-is-between-two-points-drawn-on-a-straight-line
+    endpoint1_dist = point_point_distance(line[0:2], point)
+    endpoint2_dist = point_point_distance(line[2:], point)
+    line_dist = point_point_distance(line[0:2], line[2:])
+    diff = line_dist - (endpoint1_dist + endpoint2_dist)
+    return abs(diff) <= float_comp

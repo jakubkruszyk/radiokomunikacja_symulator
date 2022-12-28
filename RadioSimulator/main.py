@@ -27,3 +27,4 @@ while True:
         app[f"{gb.current_mode}_tab"].update(visible=False)
         gb.current_mode = event
         gb.current_sub_mode = None
+        gb.last_click = None

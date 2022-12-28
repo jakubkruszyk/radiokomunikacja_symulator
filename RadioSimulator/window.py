@@ -31,8 +31,7 @@ def draw_scene_tab() -> list[list]:
 
 
 def single_ray_tab() -> list[list]:
-    single_layout = [[sg.Button("Draw ray", key="draw_ray")],
-                     [sg.Button("Calculate", key="calc_single")]]
+    single_layout = [[]]
 
     return single_layout
 
