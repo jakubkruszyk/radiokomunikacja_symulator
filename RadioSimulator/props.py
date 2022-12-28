@@ -1,5 +1,6 @@
 from collections import namedtuple
 import math
+from geometrics import intersection2
 
 Material = namedtuple("Material", ["name",
                                    "param1", "param2"])

@@ -1,2 +1,0 @@
-from draw_scene import draw_scene_routine
-from single_ray import single_ray_routine

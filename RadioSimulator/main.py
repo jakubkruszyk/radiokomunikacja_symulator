@@ -1,7 +1,6 @@
 import window
-from RadioSimulator.routines import *
-import globals as gb
 import PySimpleGUI as sg
+from routines import *
 
 lines = []
 
