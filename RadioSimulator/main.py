@@ -20,7 +20,10 @@ while True:
     elif gb.current_mode == "single_ray":
         single_ray_routine(app, event, values)
 
+    # ==================================================================================================================
     # common routines
+    # ==================================================================================================================
+    # change mode
     if event in ("draw_scene", "single_ray"):
         app[f"{event}_tab"].update(visible=True)
         app[f"{gb.current_mode}_tab"].update(visible=False)

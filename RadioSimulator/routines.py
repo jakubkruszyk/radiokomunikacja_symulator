@@ -210,6 +210,7 @@ def single_ray_routine(app, event, values):
 def draw_ray(ray: Ray):
     sources = [ray.transmitter.point] + [line[0] for line in ray.reflections_list]
     destinations = [line[0] for line in ray.reflections_list]
+    graph_ids = list()
     for src, dst in zip(sources, destinations):
-        gb.graph.draw_line(src, dst, width=gb.RAY_SIZE, color=gb.RAY_COLOR)
-    pass
+        graph_ids.append(gb.graph.draw_line(src, dst, width=gb.RAY_SIZE, color=gb.RAY_COLOR))
+    ray.graph_ids = graph_ids

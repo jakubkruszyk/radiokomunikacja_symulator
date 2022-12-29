@@ -16,6 +16,7 @@ class Ray:
         self.vec = vec_normalize(vec)
         self.ap = ap
         self.reflections_list = list()
+        self.graph_ids = list()
 
     def propagate(self, walls: list[Wall]):
         """
