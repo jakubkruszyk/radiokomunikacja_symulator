@@ -1,3 +1,6 @@
+import math
+import cmath
+
 from props import Transmitter, Wall
 from geometrics import intersection2, reflection_vec, point_point_distance, vec_normalize, point_on_line
 from globals import SCENE_SIZE
@@ -26,6 +29,7 @@ class Ray:
         Args:
             walls: list of walls on which ray can be reflected.
         """
+        # points that defines ray's line
         point1 = self.transmitter.point
         point2 = (point1[0]+self.vec[0], point1[1]+self.vec[1])
         # copy for restoration after calculations
@@ -35,6 +39,7 @@ class Ray:
         while self.ap > 0:
             intersections = list()
             for wall in walls:
+                # wall's line direction vector
                 wall_dx = wall.points[0] - wall.points[2]
                 wall_dy = wall.points[1] - wall.points[3]
                 # check for parallel lines
@@ -53,7 +58,7 @@ class Ray:
                 # sort results and add closest from last reflection point to reflections_list
                 if len(intersections) > 1:
                     # avoid unnecesary sorting
-                    sorted(intersections, key=lambda i: point_point_distance(point1, i[0]))
+                    intersections = sorted(intersections, key=lambda i: point_point_distance(point1, i[0]))
                 self.reflections_list.append(intersections[0])
 
                 # calculate new ray vector and update point1 & point2
@@ -85,6 +90,87 @@ class Ray:
         # restore initial parameters
         self.ap = initial_ap
         self.vec = initial_vec
+
+    def get_dist_coef(self, dist: float) -> tuple[complex, bool]:
+        """
+        Method that returns distance coefficient of ray. Propagate method must be called beforehand.
+        Multiply module squared of this coefficient times reference power gives actual power value.
+
+        Args:
+            dist: distance from transmitter where power will be calculated.
+
+        Returns:
+            Distance coefficient as complex number in and status flag. If given distance is larger than calculated path
+            of ray, flag will be False.
+        """
+        # check if ray has propagation list filled
+        if not self.reflections_list:
+            return 0, False
+
+        # check where on propagation path given distance is
+        alpha = 1
+        dist_sum = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
+        ref_idx = 0
+        while dist > dist_sum:
+            ref_idx += 1
+            if ref_idx > len(self.reflections_list)-1:
+                # given distance is outside calculated path
+                return 0, False
+
+            dist_sum += point_point_distance(self.reflections_list[ref_idx-1][0], self.reflections_list[ref_idx][0])
+            alpha *= self.reflections_list[ref_idx-1][1].material.alpha
+
+        path = alpha/dist * cmath.exp(-2j*math.pi*self.transmitter.freq*dist/3e8)
+        return path, True
+
+    def get_dist_coef_array(self, step: float) -> list[complex]:
+        """
+            Method that returns array of distance coefficients of ray. Array covers distance from start
+            to end of the ray with 'step' change in distance. Propagate method must be called beforehand.
+            Multiply module squared of this coefficient times reference power gives actual power value.
+
+           Args:
+               step: distance from transmitter where power will be calculated.
+
+           Returns:
+               Array of distance coefficients as complex numbers.
+       """
+        # check if ray has propagation list filled
+        if not self.reflections_list:
+            return list()
+
+        alpha = 1
+        dist_sum = step
+        dist_threshold = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
+        ref_idx = 0
+        dist_coefs = [1]
+        while True:
+            if dist_sum > dist_threshold:
+                ref_idx += 1
+                if ref_idx >= len(self.reflections_list):
+                    break
+                else:
+                    dist_threshold += point_point_distance(self.reflections_list[ref_idx - 1][0],
+                                                           self.reflections_list[ref_idx][0])
+                    alpha *= self.reflections_list[ref_idx - 1][1].material.alpha
+
+            # calculate coefficient
+            coef = alpha / dist_sum * cmath.exp(-2j * math.pi * self.transmitter.freq * dist_sum / 3e8)
+            dist_coefs.append(coef)
+            dist_sum += step
+
+        return dist_coefs
+
+    def get_power_ref(self):
+        """
+        Method that calculates reference power level of ray's transmitter.
+        It's basically Friis formula without distance. To get actual power level you need to divide by distance squared.
+        For now antennas are treated as isotropic.
+
+        Returns:
+             Reference power level of ray's transmitter.
+        """
+        return self.transmitter.power * (self.transmitter.lam / (4 * math.pi)) ** 2
 
 
 # ======================================================================================================================

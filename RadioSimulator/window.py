@@ -15,7 +15,8 @@ def draw_scene_tab() -> list[list]:
                                   default_value=materials_names[0])],
                         [sg.Column(properties_layout, key="properties_layout", scrollable=True, size=(150, 200))]]
 
-    draw_transmitter_layout = [[sg.Text("Transmitter power"), sg.Input(key="power", size=5, default_text="1")]]
+    draw_transmitter_layout = [[sg.Text("Transmitter power"), sg.Input(key="power", size=5, default_text="1")],
+                               [sg.Text("Frequency [Hz]"), sg.Input(key="freq", size=12, default_text="1000000")]]
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
                          [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
@@ -31,7 +32,7 @@ def draw_scene_tab() -> list[list]:
 
 
 def single_ray_tab() -> list[list]:
-    single_layout = [[]]
+    single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)]]
 
     return single_layout
 

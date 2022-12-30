@@ -30,7 +30,8 @@ def save_scene(walls: list[Wall],
     for transmitter in transmitters:
         transmitter_dict = {
             "point": transmitter.point,
-            "power": transmitter.power
+            "power": transmitter.power,
+            "freq": transmitter.freq
         }
         transmitters_list.append(transmitter_dict)
 
@@ -73,8 +74,9 @@ def load_scene():
         for transmitter in file_content["Transmitters"]:
             point = transmitter["point"]
             power = transmitter["power"]
+            freq = transmitter["freq"]
             graph_id = gb.graph.draw_point(point, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
-            transmitters.append(Transmitter(point, graph_id, power))
+            transmitters.append(Transmitter(point, graph_id, power, freq))
 
         # update globals
         gb.walls = walls

@@ -48,7 +48,12 @@ def draw_transmitter(event, values):
         power = float(values["power"])
     except ValueError:
         power = 1
-    gb.transmitters.append(Transmitter(values_s, circle_id, power))
+
+    try:
+        freq = float(values["freq"])
+    except ValueError:
+        freq = 1e6
+    gb.transmitters.append(Transmitter(values_s, circle_id, power, freq))
 
 
 def clear_displayed_points(app):
@@ -97,6 +102,7 @@ def edit_wall(app, event, values):
             app["x1"].update(gb.edit_prop.point[0])
             app["y1"].update(gb.edit_prop.point[1])
             app["power"].update(gb.edit_prop.power)
+            app["freq"].update(gb.edit_prop.freq)
 
     else:
         clear_displayed_points(app)
@@ -115,6 +121,9 @@ def draw_scene_routine(app, event, values):
         for line in gb.walls:
             gb.graph.delete_figure(line.graph_id)
         gb.walls.clear()
+        for transmitter in gb.transmitters:
+            gb.graph.delete_figure(transmitter.graph_id)
+        gb.transmitters.clear()
 
     elif event == "draw":
         gb.current_sub_mode = "draw_l"
@@ -175,14 +184,20 @@ def draw_scene_routine(app, event, values):
                 power = float(values["power"])
             except ValueError:
                 power = 1
+
+            try:
+                freq = float(values["freq"])
+            except ValueError:
+                freq = 1e6
             gb.graph.delete_figure(gb.edit_prop.graph_id)
             transmitter_id = gb.graph.draw_point(points, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
             gb.edit_prop.power = power
+            gb.edit_prop.freq = freq
             gb.edit_prop.graph_id = transmitter_id
             gb.edit_prop = None
 
     elif event == "save":
-        save_scene(gb.walls)
+        save_scene(gb.walls, gb.transmitters)
 
     elif event == "load":
         load_scene()
@@ -194,9 +209,14 @@ def draw_scene_routine(app, event, values):
 def single_ray_routine(app, event, values):
     if event == "graph":
         if gb.last_click:
+            try:
+                ap = int(values["AP"])
+            except ValueError:
+                ap = 0
+
             vec = (values[event][0] - gb.last_click.point[0],
                    values[event][1] - gb.last_click.point[1])
-            gb.rays.append(Ray(gb.last_click, vec, 10))
+            gb.rays.append(Ray(gb.last_click, vec, ap))
             gb.rays[-1].propagate(gb.walls)
             draw_ray(gb.rays[-1])
             gb.last_click = None

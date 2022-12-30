@@ -3,7 +3,7 @@ import math
 
 
 Material = namedtuple("Material", ["name",
-                                   "param1", "param2"])
+                                   "alpha", "param2"])
 
 
 class Wall:
@@ -52,7 +52,10 @@ class Transmitter:
     def __init__(self,
                  point: tuple[int, int],
                  graph_id: int,
-                 power: float):
+                 power: float,
+                 freq: float):
         self.point = point
         self.power = power
         self.graph_id = graph_id
+        self.freq = freq
+        self.lam = 3e8/freq
