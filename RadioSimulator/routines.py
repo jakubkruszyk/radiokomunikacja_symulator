@@ -296,15 +296,34 @@ def multi_ray_routine(app, event, values):
     if event == "add_ray_multi":
         gb.current_sub_mode = event
         app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["delete_ray_multi"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+        app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
 
     elif event == "delete_ray_multi":
         gb.current_sub_mode = event
         app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["add_ray_multi"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+        app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
 
     elif event == "calc_multi":
         pass
 
-    elif event == "graph" and gb.current_sub_mode in ("add_ray_multi", "delete_ray_multi"):
+    elif event == "graph" and gb.current_sub_mode == "add_ray_multi":
+        if gb.last_click:
+            figures = gb.graph.get_figures_at_location(values[event])
+            transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+            wall_list = [wall for wall in gb.walls if wall.graph_id in figures]
+            if wall_list:
+                gb.reflection_wall.append(wall_list[0])
+            elif transmitter_list:
+                gb.rays.append(Ray(gb.last_click, (1, 1), 1))  # ap and vec doesn't matter here
+                gb.rays[-1].propagate_to_point(transmitter_list[0].point, gb.reflection_wall)
+                draw_ray(gb.rays[-1])
+                gb.last_click = None
+
+        else:
+            figures = gb.graph.get_figures_at_location(values[event])
+            transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+            if transmitter_list:
+                gb.last_click = transmitter_list[0]
+
+    elif event == "graph" and gb.current_sub_mode == "delete_ray_multi":
         pass

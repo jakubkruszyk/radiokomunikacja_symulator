@@ -2,7 +2,8 @@ import math
 import cmath
 
 from props import Transmitter, Wall
-from geometrics import intersection2, reflection_vec, point_point_distance, vec_normalize, point_on_line
+from geometrics import intersection2, reflection_vec, point_point_distance, vec_normalize, point_on_line, \
+                       point_mirror_line
 from globals import SCENE_SIZE
 
 
@@ -90,6 +91,38 @@ class Ray:
         # restore initial parameters
         self.ap = initial_ap
         self.vec = initial_vec
+
+    def propagate_to_point(self, endpoint: tuple[float, float],
+                           walls: list[Wall] = ()):
+        """
+        Method that will try to propagate ray from its transmitter to endpoint. If walls parameter is provided ray will
+        be forced to reflect of each of wall in list in order.
+
+        Args:
+            endpoint: point to where ray should get
+            walls: list of Wall objects
+
+        """
+        if not walls:
+            self.reflections_list.append((endpoint, None))
+            return
+
+        points = [endpoint]
+        # create list of mirrored point starting from endpoint towards transmitter
+        for wall in walls[::-1]:
+            points.append(point_mirror_line(wall.points, points[-1]))
+
+        # calculate first reflection point from transmitter
+        points = points[::-1]
+        reflections = [self.transmitter.point]
+        for point, wall in zip(points, walls):
+            new_point = intersection2(wall.points, (*point, *reflections[-1]))
+            if not check_on_wall(wall, new_point):
+                return
+            reflections.append(new_point)
+
+        self.reflections_list = [(p, w) for p, w in zip(reflections[1:], walls)]
+        self.reflections_list.append((endpoint, None))
 
     def get_dist_coef(self, dist: float) -> tuple[complex, bool]:
         """

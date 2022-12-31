@@ -46,3 +46,6 @@ last_click = None
 
 # draw scene mode variables
 edit_prop = None
+
+# multi ray variables
+reflection_wall = list()
