@@ -10,37 +10,51 @@ def draw_scene_tab() -> list[list]:
                          zip(materials_list[0]._fields, materials_list[0])
                          if name != "name"]
 
+    draw_line_layout = [[sg.Text("Width:"), sg.Input(key="width", size=5, default_text="1")],
+                        [sg.Combo(materials_names, key="material_list", enable_events=True,
+                                  default_value=materials_names[0])],
+                        [sg.Column(properties_layout, key="properties_layout", scrollable=True, size=(150, 200))]]
+
+    draw_transmitter_layout = [[sg.Text("Transmitter power"), sg.Input(key="power", size=5, default_text="1")],
+                               [sg.Text("Frequency [Hz]"), sg.Input(key="freq", size=12, default_text="1000000")]]
+
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
-                         [sg.Button("Draw", key="draw"), sg.Button("Edit", key="edit"),
-                          sg.Button("Update", key="update", visible=False)],
-                         [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.scale)],
+                         [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
+                          sg.Button("Edit", key="edit"), sg.Button("Update", key="update", visible=False)],
+                         [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.SCALE)],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
                          [sg.Text("x2:"), sg.Input(key="x2", size=5), sg.Text("y2:"), sg.Input(key="y2", size=5)],
-                         [sg.Text("Width:"), sg.Input(key="width", size=5, default_text="1")],
-                         [sg.Combo(materials_names, key="material_list", enable_events=True,
-                                   default_value=materials_names[0])],
-                         [sg.Column(properties_layout, scrollable=True, size=(150, 200))],
+                         [sg.Column(draw_line_layout, key="draw_line_layout", visible=True),
+                          sg.Column(draw_transmitter_layout, key="draw_transmitter_layout", visible=False)],
                          [sg.Button("Save", key="save"), sg.Button("Load", key="load")]]
 
     return draw_scene_layout
+
+
+def single_ray_tab() -> list[list]:
+    single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)],
+                     [sg.Text("Distance step"), sg.Input(f"{gb.SCENE_GRID[0]}", key="step", size=5)],
+                     [sg.Button("Draw ray", key="draw_ray"), sg.Button("Calculate", key="calc")]]
+
+    return single_layout
 
 
 def layout() -> list[list]:
     """
      Returns layout of main window.
     """
-    dummy_side_tab = [[sg.Button("Show", key="Show")],
-                      [sg.Button("Hide", key="Hide")],
-                      [sg.Button("Add", key="Add")]]
+    side_menu = [[sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab"),
+                  sg.Column(single_ray_tab(), visible=False, key="single_ray_tab")]]
 
-    side_menu = [[sg.Column(dummy_side_tab, key="dummy_tab"), sg.Column(draw_scene_tab(), visible=False,
-                                                                        key="draw_scene_tab")]]
+    top_menu = [sg.Button('Draw scene', key="draw_scene"),
+                sg.Button("Single ray", key="single_ray")]
 
-    top_menu = [sg.Button('Draw scene', key="draw_scene"), sg.Button("Option2", key="dummy")]
+    scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
+                       key="graph", enable_events=True)],
+             [sg.Canvas(key='plot_canvas', size=(gb.SCENE_SIZE[1], 200))]]
 
     main_layout = [[top_menu],
-                   [sg.Column(side_menu), sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
-                                                   key="graph", enable_events=True)]]
+                   [sg.Column(side_menu), sg.Column(scene)]]
 
     return main_layout
 

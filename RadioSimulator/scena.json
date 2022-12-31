@@ -1,42 +1,62 @@
 {
-    "Scale": 1,
-    "Materials": [
-        [
-            "Brick",
-            1,
-            2
-        ]
-    ],
-    "Walls": [
-        {
-            "points": [
-                40,
-                160,
-                40,
-                245
-            ],
-            "width": 1.0,
-            "material": "Brick"
-        },
-        {
-            "points": [
-                40,
-                240,
-                140,
-                240
-            ],
-            "width": 1.0,
-            "material": "Brick"
-        },
-        {
-            "points": [
-                140,
-                240,
-                40,
-                160
-            ],
-            "width": 1.0,
-            "material": "Brick"
-        }
+  "Scale": 1,
+  "Materials": [
+    [
+      "Brick",
+      -1,
+      2
     ]
+  ],
+  "Walls": [
+    {
+      "points": [
+        80,
+        240,
+        80,
+        60
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    },
+    {
+      "points": [
+        80,
+        60,
+        220,
+        60
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    },
+    {
+      "points": [
+        220,
+        60,
+        220,
+        240
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    },
+    {
+      "points": [
+        220,
+        240,
+        80,
+        240
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    }
+  ],
+  "Transmitters": [
+    {
+      "point": [
+        120,
+        140
+      ],
+      "power": 1.0,
+      "freq": 1000000.0
+    }
+  ]
 }

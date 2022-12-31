@@ -1,5 +1,4 @@
 import window
-import PySimpleGUI as sg
 from routines import *
 
 lines = []
@@ -18,8 +17,16 @@ while True:
     if gb.current_mode == "draw_scene":
         draw_scene_routine(app, event, values)
 
+    elif gb.current_mode == "single_ray":
+        single_ray_routine(app, event, values)
+
+    # ==================================================================================================================
     # common routines
-    elif event in ("draw_scene", "dummy"):
+    # ==================================================================================================================
+    # change mode
+    if event in ("draw_scene", "single_ray"):
         app[f"{event}_tab"].update(visible=True)
         app[f"{gb.current_mode}_tab"].update(visible=False)
         gb.current_mode = event
+        gb.current_sub_mode = None
+        gb.last_click = None
