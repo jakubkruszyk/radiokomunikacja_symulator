@@ -126,7 +126,8 @@ class Ray:
     def get_dist_coef_array(self, step: float) -> list[complex]:
         """
             Method that returns array of distance coefficients of ray. Array covers distance from start
-            to end of the ray with 'step' change in distance. Propagate method must be called beforehand.
+            to end of the ray with 'step' change in distance. Propagate method must be called beforehand else empty list
+            will be returned.
             Multiply module squared of this coefficient times reference power gives actual power value.
 
            Args:

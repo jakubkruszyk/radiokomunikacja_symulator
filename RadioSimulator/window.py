@@ -32,7 +32,9 @@ def draw_scene_tab() -> list[list]:
 
 
 def single_ray_tab() -> list[list]:
-    single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)]]
+    single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)],
+                     [sg.Text("Distance step"), sg.Input(f"{gb.SCENE_GRID[0]}", key="step", size=5)],
+                     [sg.Button("Draw ray", key="draw_ray"), sg.Button("Calculate", key="calc")]]
 
     return single_layout
 
@@ -47,9 +49,12 @@ def layout() -> list[list]:
     top_menu = [sg.Button('Draw scene', key="draw_scene"),
                 sg.Button("Single ray", key="single_ray")]
 
+    scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
+                       key="graph", enable_events=True)],
+             [sg.Canvas(key='plot_canvas', size=(gb.SCENE_SIZE[1], 200))]]
+
     main_layout = [[top_menu],
-                   [sg.Column(side_menu), sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
-                                                   key="graph", enable_events=True)]]
+                   [sg.Column(side_menu), sg.Column(scene)]]
 
     return main_layout
 

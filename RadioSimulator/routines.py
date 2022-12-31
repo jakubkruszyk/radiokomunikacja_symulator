@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import globals as gb
 import math
 
@@ -207,18 +209,45 @@ def draw_scene_routine(app, event, values):
 # Single ray simulation
 # ======================================================================================================================
 def single_ray_routine(app, event, values):
-    if event == "graph":
+    if event == "draw_ray":
+        # clear previous ray and enable drawing new one
+        clear_rays()
+        gb.current_sub_mode = "draw_ray"
+
+    elif event == "calc":
+        try:
+            step = float(values["step"])
+        except ValueError:
+            step = gb.SCENE_GRID[0]
+
+        if not gb.rays:
+            sg.popup_error("Draw ray first")
+            return
+        coefs = gb.rays[-1].get_dist_coef_array(step)
+        if not coefs:
+            return
+
+        power_ref = gb.rays[-1].get_power_ref()
+        power_values = [power_ref * abs(c)**2 for c in coefs[1:]]
+
+        # plot results
+        x_space = [i*step for i in range(len(power_values))]
+        draw_plot(power_values, x_space, app["plot_canvas"].TKCanvas)
+
+    elif event == "graph" and gb.current_sub_mode == "draw_ray":
         if gb.last_click:
             try:
                 ap = int(values["AP"])
             except ValueError:
                 ap = 0
-
+            # create ray and propagate it
             vec = (values[event][0] - gb.last_click.point[0],
                    values[event][1] - gb.last_click.point[1])
             gb.rays.append(Ray(gb.last_click, vec, ap))
             gb.rays[-1].propagate(gb.walls)
             draw_ray(gb.rays[-1])
+            # exit drawing sub_mode
+            gb.current_sub_mode = None
             gb.last_click = None
         else:
             figures = gb.graph.get_figures_at_location(values[event])
@@ -234,3 +263,25 @@ def draw_ray(ray: Ray):
     for src, dst in zip(sources, destinations):
         graph_ids.append(gb.graph.draw_line(src, dst, width=gb.RAY_SIZE, color=gb.RAY_COLOR))
     ray.graph_ids = graph_ids
+
+
+def clear_rays():
+    if gb.rays:
+        for ray in gb.rays:
+            for graph_id in ray.graph_ids:
+                gb.graph.delete_figure(graph_id)
+        gb.rays.clear()
+
+
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    return figure_canvas_agg
+
+
+def draw_plot(y: list, x: list, canvas):
+    fig = plt.figure(figsize=(5, 2))
+    plt.plot(y, x)
+    plt.grid()
+    draw_figure(canvas, fig)
