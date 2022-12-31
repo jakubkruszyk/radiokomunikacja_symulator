@@ -42,9 +42,10 @@ def save_scene(walls: list[Wall],
         "Transmitters": transmitters_list
     }
 
-    path = sg.popup_get_file("Choose file:", save_as=True)
-    with open(path, "w") as file:
-        file.write(json.dumps(combined_list, indent=2))
+    path = sg.popup_get_file("Choose file:", save_as=True, default_extension=".json")
+    if path:
+        with open(path, "w") as file:
+            file.write(json.dumps(combined_list, indent=2))
 
 
 def load_scene():
@@ -53,6 +54,9 @@ def load_scene():
         File location is chosen by popup.
     """
     path = sg.popup_get_file("Choose file:")
+    if not path:
+        return
+
     with open(path) as file:
         file_content = json.load(file)
         # read scene SCALE
