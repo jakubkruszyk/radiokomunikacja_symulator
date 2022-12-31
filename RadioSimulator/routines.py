@@ -213,6 +213,7 @@ def single_ray_routine(app, event, values):
         # clear previous ray and enable drawing new one
         clear_rays()
         gb.current_sub_mode = "draw_ray"
+        app["draw_ray"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
 
     elif event == "calc":
         try:
@@ -248,6 +249,7 @@ def single_ray_routine(app, event, values):
             draw_ray(gb.rays[-1])
             # exit drawing sub_mode
             gb.current_sub_mode = None
+            app["draw_ray"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
             gb.last_click = None
         else:
             figures = gb.graph.get_figures_at_location(values[event])
@@ -285,3 +287,24 @@ def draw_plot(y: list, x: list, canvas):
     plt.plot(y, x)
     plt.grid()
     draw_figure(canvas, fig)
+
+
+# ======================================================================================================================
+# Multi ray simulation
+# ======================================================================================================================
+def multi_ray_routine(app, event, values):
+    if event == "add_ray_multi":
+        gb.current_sub_mode = event
+        app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+        app["delete_ray_multi"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+
+    elif event == "delete_ray_multi":
+        gb.current_sub_mode = event
+        app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+        app["add_ray_multi"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+
+    elif event == "calc_multi":
+        pass
+
+    elif event == "graph" and gb.current_sub_mode in ("add_ray_multi", "delete_ray_multi"):
+        pass
