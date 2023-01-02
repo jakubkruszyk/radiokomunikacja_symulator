@@ -22,7 +22,8 @@ def draw_scene_tab() -> list[list]:
                                [sg.Text("Frequency [Hz]"), sg.Input(key="freq", size=12, default_text="1000000")]]
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
-                         [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter")],
+                         [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
+                          sg.Button("Add R", key="receiver")],
                          [sg.Button("Edit", key="edit"), sg.Button("Delete", key="delete"),
                           sg.Button("Update", key="update")],
                          [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.SCALE)],

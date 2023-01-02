@@ -5,7 +5,7 @@ import globals as gb
 import math
 
 from RadioSimulator.props import Material
-from props import Wall, Transmitter
+from props import Wall, Transmitter, Receiver
 from ray import Ray
 from files import save_scene, load_scene
 from materials import materials_list
@@ -77,16 +77,21 @@ def show_transmitter_layout(app):
     clear_displayed_points(app)
 
 
+def show_receiver_layout(app):
+    app["draw_line_layout"].update(visible=False)
+    app["draw_transmitter_layout"].update(visible=False)
+    clear_displayed_points(app)
+
+
 def edit_wall(app, event, values):
     # get ids of objects that user clicked on
     objects = gb.graph.get_figures_at_location(values[event])
     # check walls, transmitter lists for matching ids
-    filtered = [o for o in (*gb.walls, *gb.transmitters) if o.graph_id in objects]
+    filtered = [o for o in (*gb.walls, *gb.transmitters, *gb.receivers) if o.graph_id in objects]
     if filtered:
         gb.edit_prop = filtered[0]
         if type(gb.edit_prop) == Wall:
             show_line_layout(app)
-            app["update"].update(visible=True)
             app["width"].update(gb.edit_prop.width)
             app["x1"].update(gb.edit_prop.points[0])
             app["y1"].update(gb.edit_prop.points[1])
@@ -98,11 +103,15 @@ def edit_wall(app, event, values):
                     app[f"property_{name}"].update(value)
         elif type(gb.edit_prop) == Transmitter:
             show_transmitter_layout(app)
-            app["update"].update(visible=True)
             app["x1"].update(gb.edit_prop.point[0])
             app["y1"].update(gb.edit_prop.point[1])
             app["power"].update(gb.edit_prop.power)
             app["freq"].update(gb.edit_prop.freq)
+
+        elif type(gb.edit_prop) == Receiver:
+            show_receiver_layout(app)
+            app["x1"].update(gb.edit_prop.point[0])
+            app["y1"].update(gb.edit_prop.point[1])
 
     else:
         clear_displayed_points(app)
@@ -112,6 +121,7 @@ def draw_scene_button_update(app, active):
     app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["receiver"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["delete"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app[active].update(button_color=gb.BUTTON_ACTIVE_COLOR)
 
@@ -128,12 +138,20 @@ def delete_element(app, event, values):
         gb.walls.remove(walls[0])
 
 
+def draw_receiver(app, event, values):
+    values_s = point_quantization(values[event])
+    circle_id = gb.graph.draw_point(values_s, gb.RECEIVER_SIZE, color=gb.RECEIVER_COLOR)
+    gb.receivers.append(Receiver(values_s, circle_id))
+
+
 def draw_scene_routine(app, event, values):
     if event == "graph":
         if gb.current_sub_mode == "draw_l":
             draw_wall(app, event, values)
         elif gb.current_sub_mode == "draw_t":
             draw_transmitter(event, values)
+        elif gb.current_sub_mode == "draw_r":
+            draw_receiver(app, event, values)
         elif gb.current_sub_mode == "edit":
             edit_wall(app, event, values)
         elif gb.current_sub_mode == "delete":
@@ -151,10 +169,16 @@ def draw_scene_routine(app, event, values):
         gb.current_sub_mode = "draw_l"
         draw_scene_button_update(app, "draw")
         show_line_layout(app)
+
     elif event == "transmitter":
         gb.current_sub_mode = "draw_t"
         draw_scene_button_update(app, "transmitter")
         show_transmitter_layout(app)
+
+    elif event == "receiver":
+        gb.current_sub_mode = "draw_r"
+        draw_scene_button_update(app, "receiver")
+        show_receiver_layout(app)
 
     elif event == "edit":
         gb.current_sub_mode = "edit"

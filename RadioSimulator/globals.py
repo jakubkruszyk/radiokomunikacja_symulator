@@ -7,6 +7,9 @@ WALL_WIDTH = 5
 TRANSMITTER_COLOR = "#ff0000"
 TRANSMITTER_SIZE = 6
 
+RECEIVER_COLOR = "#1a1aff"
+RECEIVER_SIZE = 6
+
 RAY_COLOR = "#ffff00"
 RAY_SIZE = 2
 
@@ -37,6 +40,7 @@ boundaries = [(0, 0, SCENE_SIZE[0], 0),
 # on scene objects
 walls = list()
 transmitters = list()
+receivers = list()
 rays = list()
 
 
