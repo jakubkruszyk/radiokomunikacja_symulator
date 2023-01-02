@@ -1,5 +1,5 @@
 import window
-from routines import single_ray_routine, draw_scene_routine, multi_ray_routine
+from routines import single_ray_routine, draw_scene_routine, multi_ray_routine, clear_rays
 import globals as gb
 import PySimpleGUI as sg
 
@@ -35,3 +35,5 @@ while True:
         gb.current_mode = event
         gb.current_sub_mode = None
         gb.last_click = None
+        clear_rays()
+        gb.reflection_wall.clear()

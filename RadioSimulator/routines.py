@@ -66,14 +66,12 @@ def clear_displayed_points(app):
 
 
 def show_line_layout(app):
-    app["update"].update(visible=False)
     app["draw_line_layout"].update(visible=True)
     app["draw_transmitter_layout"].update(visible=False)
     clear_displayed_points(app)
 
 
 def show_transmitter_layout(app):
-    app["update"].update(visible=False)
     app["draw_line_layout"].update(visible=False)
     app["draw_transmitter_layout"].update(visible=True)
     clear_displayed_points(app)
@@ -110,6 +108,26 @@ def edit_wall(app, event, values):
         clear_displayed_points(app)
 
 
+def draw_scene_button_update(app, active):
+    app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["delete"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app[active].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+
+
+def delete_element(app, event, values):
+    figures = gb.graph.get_figures_at_location(values[event])
+    walls = [wall for wall in gb.walls if wall.graph_id in figures]
+    transmitters = [transmitter for transmitter in gb.transmitters if transmitter.graph_id in figures]
+    if transmitters:
+        gb.graph.delete_figure(transmitters[0].graph_id)
+        gb.transmitters.remove(transmitters[0])
+    elif walls:
+        gb.graph.delete_figure(walls[0].graph_id)
+        gb.walls.remove(walls[0])
+
+
 def draw_scene_routine(app, event, values):
     if event == "graph":
         if gb.current_sub_mode == "draw_l":
@@ -118,6 +136,8 @@ def draw_scene_routine(app, event, values):
             draw_transmitter(event, values)
         elif gb.current_sub_mode == "edit":
             edit_wall(app, event, values)
+        elif gb.current_sub_mode == "delete":
+            delete_element(app, event, values)
 
     elif event == "reset_scene":
         for line in gb.walls:
@@ -129,23 +149,20 @@ def draw_scene_routine(app, event, values):
 
     elif event == "draw":
         gb.current_sub_mode = "draw_l"
-        app["draw"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+        draw_scene_button_update(app, "draw")
         show_line_layout(app)
     elif event == "transmitter":
         gb.current_sub_mode = "draw_t"
-        app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["transmitter"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+        draw_scene_button_update(app, "transmitter")
         show_transmitter_layout(app)
 
     elif event == "edit":
         gb.current_sub_mode = "edit"
-        app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["edit"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["update"].update(visible=True)
+        draw_scene_button_update(app, "edit")
+
+    elif event == "delete":
+        gb.current_sub_mode = "delete"
+        draw_scene_button_update(app, "delete")
 
     elif event == "material_list":
         material: Material = [m for m in materials_list if m.name == values[event]][0]
@@ -295,15 +312,18 @@ def draw_plot(y: list, x: list, canvas):
 def multi_ray_routine(app, event, values):
     if event == "add_ray_multi":
         gb.current_sub_mode = event
+        gb.last_click = None
         app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
         app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
 
     elif event == "delete_ray_multi":
         gb.current_sub_mode = event
+        gb.last_click = None
         app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
         app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
 
     elif event == "calc_multi":
+        gb.last_click = None
         pass
 
     elif event == "graph" and gb.current_sub_mode == "add_ray_multi":
@@ -318,6 +338,7 @@ def multi_ray_routine(app, event, values):
                 gb.rays[-1].propagate_to_point(transmitter_list[0].point, gb.reflection_wall)
                 draw_ray(gb.rays[-1])
                 gb.last_click = None
+                gb.reflection_wall.clear()
 
         else:
             figures = gb.graph.get_figures_at_location(values[event])
@@ -326,4 +347,13 @@ def multi_ray_routine(app, event, values):
                 gb.last_click = transmitter_list[0]
 
     elif event == "graph" and gb.current_sub_mode == "delete_ray_multi":
-        pass
+        figures = gb.graph.get_figures_at_location(values[event])
+        for ray in gb.rays:
+            test = [line for line in ray.graph_ids if line in figures]
+            if any(test):
+                for graph_id in ray.graph_ids:
+                    gb.graph.delete_figure(graph_id)
+                gb.rays.remove(ray)
+
+
+
