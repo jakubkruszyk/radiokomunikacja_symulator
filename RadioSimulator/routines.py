@@ -134,9 +134,13 @@ def delete_element(app, event, values):
     figures = gb.graph.get_figures_at_location(values[event])
     walls = [wall for wall in gb.walls if wall.graph_id in figures]
     transmitters = [transmitter for transmitter in gb.transmitters if transmitter.graph_id in figures]
+    receivers = [receiver for receiver in gb.receivers if receiver.graph_id in figures]
     if transmitters:
         gb.graph.delete_figure(transmitters[0].graph_id)
         gb.transmitters.remove(transmitters[0])
+    elif receivers:
+        gb.graph.delete_figure(receivers[0].graph_id)
+        gb.receivers.remove(receivers[0])
     elif walls:
         gb.graph.delete_figure(walls[0].graph_id)
         gb.walls.remove(walls[0])
