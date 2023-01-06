@@ -26,6 +26,8 @@ BUTTON_INACTIVE_COLOR = "#283b5b"
 SCALE = 1
 FLOAT_COMP = 0.05
 
+MULTI_RAY_STEP = 300
+
 # ======================================================================================================================
 # Global variables
 # ======================================================================================================================
@@ -47,6 +49,9 @@ rays = list()
 # common mode variables
 current_sub_mode = None
 last_click = None
+selected_t = None
+selected_r1 = None
+selected_r2 = None
 
 # draw scene mode variables
 edit_prop = None

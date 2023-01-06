@@ -20,6 +20,7 @@ class Ray:
         self.vec = vec_normalize(vec)
         self.ap = ap
         self.reflections_list = list()
+        self.forced_reflection_walls = list()
         self.graph_ids = list()
 
     def propagate(self, walls: list[Wall]):
@@ -104,7 +105,7 @@ class Ray:
 
         """
         if not walls:
-            self.reflections_list.append((endpoint, None))
+            self.reflections_list = [(endpoint, None)]
             return
 
         points = [endpoint]
@@ -205,6 +206,25 @@ class Ray:
              Reference power level of ray's transmitter.
         """
         return self.transmitter.power * (self.transmitter.lam / (4 * math.pi)) ** 2
+
+    def get_coef_at_end(self) -> complex | None:
+        """
+                Method that returns distance coefficient at the end of ray. Propagate method must be called beforehand.
+                Multiply module squared of this coefficient times reference power gives actual power value.
+
+                Returns:
+                    Distance coefficient as complex number.
+        """
+        if not self.reflections_list:
+            return None
+
+        dist_sum = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
+        alpha = 1
+        for i in range(1, len(self.reflections_list)):
+            alpha *= self.reflections_list[i-1][1].material.alpha
+            dist_sum += point_point_distance(self.reflections_list[i][0], self.reflections_list[i-1][0])
+
+        return alpha/dist_sum * cmath.exp(-2j*math.pi*self.transmitter.freq*dist_sum/3e8)
 
 
 # ======================================================================================================================

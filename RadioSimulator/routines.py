@@ -1,14 +1,15 @@
 import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from numpy import linspace
 import globals as gb
 import math
 
-from RadioSimulator.props import Material
-from props import Wall, Transmitter, Receiver
+from props import Wall, Transmitter, Receiver, Material
 from ray import Ray
 from files import save_scene, load_scene
 from materials import materials_list
+from geometrics import point_point_distance
 
 
 # ======================================================================================================================
@@ -123,6 +124,9 @@ def draw_scene_button_update(app, active):
     app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["receiver"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["delete"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["calc_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app[active].update(button_color=gb.BUTTON_ACTIVE_COLOR)
 
 
@@ -337,29 +341,32 @@ def multi_ray_routine(app, event, values):
     if event == "add_ray_multi":
         gb.current_sub_mode = event
         gb.last_click = None
-        app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+        draw_scene_button_update(app, event)
 
     elif event == "delete_ray_multi":
         gb.current_sub_mode = event
         gb.last_click = None
-        app[event].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+        draw_scene_button_update(app, event)
 
     elif event == "calc_multi":
+        draw_scene_button_update(app, event)
+        gb.current_sub_mode = event
         gb.last_click = None
+
         pass
 
     elif event == "graph" and gb.current_sub_mode == "add_ray_multi":
         if gb.last_click:
             figures = gb.graph.get_figures_at_location(values[event])
-            transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+            receivers_list = [r for r in gb.receivers if r.graph_id in figures]
             wall_list = [wall for wall in gb.walls if wall.graph_id in figures]
             if wall_list:
                 gb.reflection_wall.append(wall_list[0])
-            elif transmitter_list:
+            elif receivers_list:
+                gb.selected_r1 = receivers_list[0].point
                 gb.rays.append(Ray(gb.last_click, (1, 1), 1))  # ap and vec doesn't matter here
-                gb.rays[-1].propagate_to_point(transmitter_list[0].point, gb.reflection_wall)
+                gb.rays[-1].forced_reflection_walls = gb.reflection_wall.copy()
+                gb.rays[-1].propagate_to_point(receivers_list[0].point, gb.reflection_wall)
                 draw_ray(gb.rays[-1])
                 gb.last_click = None
                 gb.reflection_wall.clear()
@@ -369,6 +376,7 @@ def multi_ray_routine(app, event, values):
             transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
             if transmitter_list:
                 gb.last_click = transmitter_list[0]
+                gb.selected_t = transmitter_list[0]
 
     elif event == "graph" and gb.current_sub_mode == "delete_ray_multi":
         figures = gb.graph.get_figures_at_location(values[event])
@@ -379,5 +387,28 @@ def multi_ray_routine(app, event, values):
                     gb.graph.delete_figure(graph_id)
                 gb.rays.remove(ray)
 
+    elif event == "graph" and gb.current_sub_mode == "calc_multi":
+        figures = gb.graph.get_figures_at_location(values[event])
+        receivers_list = [r for r in gb.receivers if r.graph_id in figures]
+        if not receivers_list:
+            return
+        gb.selected_r2 = receivers_list[0].point
+        values = multi_ray_power()
+        space = linspace(0, point_point_distance(gb.selected_r1, gb.selected_r2), gb.MULTI_RAY_STEP).tolist()
+        draw_plot(values, space, app["plot_canvas"].TKCanvas)
 
 
+def multi_ray_power():
+    x_space = linspace(gb.selected_r1[0], gb.selected_r2[0], gb.MULTI_RAY_STEP)
+    y_space = linspace(gb.selected_r1[1], gb.selected_r2[1], gb.MULTI_RAY_STEP)
+    power_list = list()
+    for x, y in zip(x_space, y_space):
+        for ray in gb.rays:
+            ray.propagate_to_point((x, y), ray.forced_reflection_walls)
+        coefficients = [ray.get_coef_at_end() for ray in gb.rays]
+        power_ref = gb.rays[0].get_power_ref()
+        coefs_sum = sum(coefficients)
+        power = power_ref * abs(coefs_sum)**2
+        power_list.append(power)
+
+    return power_list
