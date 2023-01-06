@@ -18,9 +18,37 @@ def abc(x1: int,
     Returns:
         tuple[float, float, float]
     """
-    a = (y2 - y1) / (x2 - x1)
-    b = y2 - a * x2
-    return a, -1.0, b
+    a = (y2 - y1)
+    b = -(x2 - x1)
+    c = -a*x1 - b*y1
+    return a, b, c
+
+
+def abc_normalized(x1: int,
+                   y1: int,
+                   x2: int,
+                   y2: int) -> tuple[float, float, float]:
+    """
+    Returns a,b and c coefficients of walls in general form: ax + by + c = 0 calculated from two points.
+    Coefficients are normalized.
+
+    Args:
+        x1(int): x-coordinate of first point.
+        y1(int): y-coordinate of first point.
+        x2(int): x-coordinate of second point.
+        y2(int): y-coordinate of second point.
+
+    Returns:
+        tuple[float, float, float]
+    """
+    a = (y2 - y1)
+    b = -(x2 - x1)
+    c = -a*x1 - b*y1
+    m = math.sqrt(a*a + b*b)
+    a = a / m
+    b = b / m
+    c = c / m
+    return a, b, c
 
 
 def intersection(line1: tuple[int, int, int, int],
@@ -151,3 +179,22 @@ def point_on_line(line: tuple[float, float, float, float],
     line_dist = point_point_distance(line[0:2], line[2:])
     diff = line_dist - (endpoint1_dist + endpoint2_dist)
     return abs(diff) <= FLOAT_COMP
+
+
+def point_mirror_line(line: tuple[float, float, float, float],
+                      point: tuple[float, float]) -> tuple[float, float]:
+    """
+    Function that mirrors given point along given line.
+
+    Args:
+         line: tuple containing two points that form a line (x1, y1, x2, y2).
+         point: tuple with coordinates of point to be mirrored.
+
+    Returns:
+        tuple with coordinates of mirrored point.
+    """
+    a, b, c = abc_normalized(*line)
+    d = a*point[0] + b*point[1] + c
+    px_mirror = point[0] - 2*a*d
+    py_mirror = point[1] - 2*b*d
+    return px_mirror, py_mirror

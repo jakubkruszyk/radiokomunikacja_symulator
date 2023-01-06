@@ -2,7 +2,8 @@ import math
 import cmath
 
 from props import Transmitter, Wall
-from geometrics import intersection2, reflection_vec, point_point_distance, vec_normalize, point_on_line
+from geometrics import intersection2, reflection_vec, point_point_distance, vec_normalize, point_on_line, \
+                       point_mirror_line
 from globals import SCENE_SIZE
 
 
@@ -19,6 +20,7 @@ class Ray:
         self.vec = vec_normalize(vec)
         self.ap = ap
         self.reflections_list = list()
+        self.forced_reflection_walls = list()
         self.graph_ids = list()
 
     def propagate(self, walls: list[Wall]):
@@ -90,6 +92,38 @@ class Ray:
         # restore initial parameters
         self.ap = initial_ap
         self.vec = initial_vec
+
+    def propagate_to_point(self, endpoint: tuple[float, float],
+                           walls: list[Wall] = ()):
+        """
+        Method that will try to propagate ray from its transmitter to endpoint. If walls parameter is provided ray will
+        be forced to reflect of each of wall in list in order.
+
+        Args:
+            endpoint: point to where ray should get
+            walls: list of Wall objects
+
+        """
+        if not walls:
+            self.reflections_list = [(endpoint, None)]
+            return
+
+        points = [endpoint]
+        # create list of mirrored point starting from endpoint towards transmitter
+        for wall in walls[::-1]:
+            points.append(point_mirror_line(wall.points, points[-1]))
+
+        # calculate first reflection point from transmitter
+        points = points[::-1]
+        reflections = [self.transmitter.point]
+        for point, wall in zip(points, walls):
+            new_point = intersection2(wall.points, (*point, *reflections[-1]))
+            if not check_on_wall(wall, new_point):
+                return
+            reflections.append(new_point)
+
+        self.reflections_list = [(p, w) for p, w in zip(reflections[1:], walls)]
+        self.reflections_list.append((endpoint, None))
 
     def get_dist_coef(self, dist: float) -> tuple[complex, bool]:
         """
@@ -172,6 +206,25 @@ class Ray:
              Reference power level of ray's transmitter.
         """
         return self.transmitter.power * (self.transmitter.lam / (4 * math.pi)) ** 2
+
+    def get_coef_at_end(self) -> complex | None:
+        """
+                Method that returns distance coefficient at the end of ray. Propagate method must be called beforehand.
+                Multiply module squared of this coefficient times reference power gives actual power value.
+
+                Returns:
+                    Distance coefficient as complex number.
+        """
+        if not self.reflections_list:
+            return None
+
+        dist_sum = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
+        alpha = 1
+        for i in range(1, len(self.reflections_list)):
+            alpha *= self.reflections_list[i-1][1].material.alpha
+            dist_sum += point_point_distance(self.reflections_list[i][0], self.reflections_list[i-1][0])
+
+        return alpha/dist_sum * cmath.exp(-2j*math.pi*self.transmitter.freq*dist_sum/3e8)
 
 
 # ======================================================================================================================

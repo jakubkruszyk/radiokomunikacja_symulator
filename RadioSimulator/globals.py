@@ -7,6 +7,9 @@ WALL_WIDTH = 5
 TRANSMITTER_COLOR = "#ff0000"
 TRANSMITTER_SIZE = 6
 
+RECEIVER_COLOR = "#1a1aff"
+RECEIVER_SIZE = 6
+
 RAY_COLOR = "#ffff00"
 RAY_SIZE = 2
 
@@ -23,6 +26,8 @@ BUTTON_INACTIVE_COLOR = "#283b5b"
 SCALE = 1
 FLOAT_COMP = 0.05
 
+MULTI_RAY_STEP = 300
+
 # ======================================================================================================================
 # Global variables
 # ======================================================================================================================
@@ -37,12 +42,19 @@ boundaries = [(0, 0, SCENE_SIZE[0], 0),
 # on scene objects
 walls = list()
 transmitters = list()
+receivers = list()
 rays = list()
 
 
 # common mode variables
 current_sub_mode = None
 last_click = None
+selected_t = None
+selected_r1 = None
+selected_r2 = None
 
 # draw scene mode variables
 edit_prop = None
+
+# multi ray variables
+reflection_wall = list()

@@ -1,14 +1,15 @@
 import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from numpy import linspace
 import globals as gb
 import math
 
-from RadioSimulator.props import Material
-from props import Wall, Transmitter
+from props import Wall, Transmitter, Receiver, Material
 from ray import Ray
 from files import save_scene, load_scene
 from materials import materials_list
+from geometrics import point_point_distance
 
 
 # ======================================================================================================================
@@ -66,16 +67,20 @@ def clear_displayed_points(app):
 
 
 def show_line_layout(app):
-    app["update"].update(visible=False)
     app["draw_line_layout"].update(visible=True)
     app["draw_transmitter_layout"].update(visible=False)
     clear_displayed_points(app)
 
 
 def show_transmitter_layout(app):
-    app["update"].update(visible=False)
     app["draw_line_layout"].update(visible=False)
     app["draw_transmitter_layout"].update(visible=True)
+    clear_displayed_points(app)
+
+
+def show_receiver_layout(app):
+    app["draw_line_layout"].update(visible=False)
+    app["draw_transmitter_layout"].update(visible=False)
     clear_displayed_points(app)
 
 
@@ -83,12 +88,11 @@ def edit_wall(app, event, values):
     # get ids of objects that user clicked on
     objects = gb.graph.get_figures_at_location(values[event])
     # check walls, transmitter lists for matching ids
-    filtered = [o for o in (*gb.walls, *gb.transmitters) if o.graph_id in objects]
+    filtered = [o for o in (*gb.walls, *gb.transmitters, *gb.receivers) if o.graph_id in objects]
     if filtered:
         gb.edit_prop = filtered[0]
         if type(gb.edit_prop) == Wall:
             show_line_layout(app)
-            app["update"].update(visible=True)
             app["width"].update(gb.edit_prop.width)
             app["x1"].update(gb.edit_prop.points[0])
             app["y1"].update(gb.edit_prop.points[1])
@@ -100,14 +104,48 @@ def edit_wall(app, event, values):
                     app[f"property_{name}"].update(value)
         elif type(gb.edit_prop) == Transmitter:
             show_transmitter_layout(app)
-            app["update"].update(visible=True)
             app["x1"].update(gb.edit_prop.point[0])
             app["y1"].update(gb.edit_prop.point[1])
             app["power"].update(gb.edit_prop.power)
             app["freq"].update(gb.edit_prop.freq)
 
+        elif type(gb.edit_prop) == Receiver:
+            show_receiver_layout(app)
+            app["x1"].update(gb.edit_prop.point[0])
+            app["y1"].update(gb.edit_prop.point[1])
+
     else:
         clear_displayed_points(app)
+
+
+def draw_scene_button_update(app, active):
+    app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["receiver"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["delete"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["calc_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app[active].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+
+
+def delete_element(app, event, values):
+    figures = gb.graph.get_figures_at_location(values[event])
+    walls = [wall for wall in gb.walls if wall.graph_id in figures]
+    transmitters = [transmitter for transmitter in gb.transmitters if transmitter.graph_id in figures]
+    if transmitters:
+        gb.graph.delete_figure(transmitters[0].graph_id)
+        gb.transmitters.remove(transmitters[0])
+    elif walls:
+        gb.graph.delete_figure(walls[0].graph_id)
+        gb.walls.remove(walls[0])
+
+
+def draw_receiver(app, event, values):
+    values_s = point_quantization(values[event])
+    circle_id = gb.graph.draw_point(values_s, gb.RECEIVER_SIZE, color=gb.RECEIVER_COLOR)
+    gb.receivers.append(Receiver(values_s, circle_id))
 
 
 def draw_scene_routine(app, event, values):
@@ -116,8 +154,12 @@ def draw_scene_routine(app, event, values):
             draw_wall(app, event, values)
         elif gb.current_sub_mode == "draw_t":
             draw_transmitter(event, values)
+        elif gb.current_sub_mode == "draw_r":
+            draw_receiver(app, event, values)
         elif gb.current_sub_mode == "edit":
             edit_wall(app, event, values)
+        elif gb.current_sub_mode == "delete":
+            delete_element(app, event, values)
 
     elif event == "reset_scene":
         for line in gb.walls:
@@ -129,23 +171,26 @@ def draw_scene_routine(app, event, values):
 
     elif event == "draw":
         gb.current_sub_mode = "draw_l"
-        app["draw"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+        draw_scene_button_update(app, "draw")
         show_line_layout(app)
+
     elif event == "transmitter":
         gb.current_sub_mode = "draw_t"
-        app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["edit"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["transmitter"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
+        draw_scene_button_update(app, "transmitter")
         show_transmitter_layout(app)
+
+    elif event == "receiver":
+        gb.current_sub_mode = "draw_r"
+        draw_scene_button_update(app, "receiver")
+        show_receiver_layout(app)
 
     elif event == "edit":
         gb.current_sub_mode = "edit"
-        app["draw"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["edit"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
-        app["transmitter"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
-        app["update"].update(visible=True)
+        draw_scene_button_update(app, "edit")
+
+    elif event == "delete":
+        gb.current_sub_mode = "delete"
+        draw_scene_button_update(app, "delete")
 
     elif event == "material_list":
         material: Material = [m for m in materials_list if m.name == values[event]][0]
@@ -213,6 +258,7 @@ def single_ray_routine(app, event, values):
         # clear previous ray and enable drawing new one
         clear_rays()
         gb.current_sub_mode = "draw_ray"
+        app["draw_ray"].update(button_color=gb.BUTTON_ACTIVE_COLOR)
 
     elif event == "calc":
         try:
@@ -248,6 +294,7 @@ def single_ray_routine(app, event, values):
             draw_ray(gb.rays[-1])
             # exit drawing sub_mode
             gb.current_sub_mode = None
+            app["draw_ray"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
             gb.last_click = None
         else:
             figures = gb.graph.get_figures_at_location(values[event])
@@ -285,3 +332,83 @@ def draw_plot(y: list, x: list, canvas):
     plt.plot(y, x)
     plt.grid()
     draw_figure(canvas, fig)
+
+
+# ======================================================================================================================
+# Multi ray simulation
+# ======================================================================================================================
+def multi_ray_routine(app, event, values):
+    if event == "add_ray_multi":
+        gb.current_sub_mode = event
+        gb.last_click = None
+        draw_scene_button_update(app, event)
+
+    elif event == "delete_ray_multi":
+        gb.current_sub_mode = event
+        gb.last_click = None
+        draw_scene_button_update(app, event)
+
+    elif event == "calc_multi":
+        draw_scene_button_update(app, event)
+        gb.current_sub_mode = event
+        gb.last_click = None
+
+        pass
+
+    elif event == "graph" and gb.current_sub_mode == "add_ray_multi":
+        if gb.last_click:
+            figures = gb.graph.get_figures_at_location(values[event])
+            receivers_list = [r for r in gb.receivers if r.graph_id in figures]
+            wall_list = [wall for wall in gb.walls if wall.graph_id in figures]
+            if wall_list:
+                gb.reflection_wall.append(wall_list[0])
+            elif receivers_list:
+                gb.selected_r1 = receivers_list[0].point
+                gb.rays.append(Ray(gb.last_click, (1, 1), 1))  # ap and vec doesn't matter here
+                gb.rays[-1].forced_reflection_walls = gb.reflection_wall.copy()
+                gb.rays[-1].propagate_to_point(receivers_list[0].point, gb.reflection_wall)
+                draw_ray(gb.rays[-1])
+                gb.last_click = None
+                gb.reflection_wall.clear()
+
+        else:
+            figures = gb.graph.get_figures_at_location(values[event])
+            transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+            if transmitter_list:
+                gb.last_click = transmitter_list[0]
+                gb.selected_t = transmitter_list[0]
+
+    elif event == "graph" and gb.current_sub_mode == "delete_ray_multi":
+        figures = gb.graph.get_figures_at_location(values[event])
+        for ray in gb.rays:
+            test = [line for line in ray.graph_ids if line in figures]
+            if any(test):
+                for graph_id in ray.graph_ids:
+                    gb.graph.delete_figure(graph_id)
+                gb.rays.remove(ray)
+
+    elif event == "graph" and gb.current_sub_mode == "calc_multi":
+        figures = gb.graph.get_figures_at_location(values[event])
+        receivers_list = [r for r in gb.receivers if r.graph_id in figures]
+        if not receivers_list:
+            return
+        gb.selected_r2 = receivers_list[0].point
+        values = multi_ray_power()
+        space = linspace(0, point_point_distance(gb.selected_r1, gb.selected_r2), gb.MULTI_RAY_STEP).tolist()
+        draw_plot(values, space, app["plot_canvas"].TKCanvas)
+
+
+def multi_ray_power():
+    x_space = linspace(gb.selected_r1[0], gb.selected_r2[0], gb.MULTI_RAY_STEP)
+    y_space = linspace(gb.selected_r1[1], gb.selected_r2[1], gb.MULTI_RAY_STEP)
+    power_list = list()
+    for x, y in zip(x_space, y_space):
+        for ray in gb.rays:
+            ray.propagate_to_point((x, y), ray.forced_reflection_walls)
+        coefficients = [ray.get_coef_at_end() for ray in gb.rays]
+        power_ref = gb.rays[0].get_power_ref()
+        coefs_sum = sum(coefficients)
+        power = power_ref * abs(coefs_sum)**2
+        power_list.append(power)
+
+    return power_list

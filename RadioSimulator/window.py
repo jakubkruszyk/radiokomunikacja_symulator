@@ -4,6 +4,9 @@ from materials import materials_list
 
 
 def draw_scene_tab() -> list[list]:
+    """
+        Function that generates pysimplegui layout for draw-scene mode
+    """
     materials_names = [m.name for m in materials_list]
     properties_layout = [[sg.Text(name), sg.Text(value, key=f"property_{name}")]
                          for name, value in
@@ -20,7 +23,9 @@ def draw_scene_tab() -> list[list]:
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
                          [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
-                          sg.Button("Edit", key="edit"), sg.Button("Update", key="update", visible=False)],
+                          sg.Button("Add R", key="receiver")],
+                         [sg.Button("Edit", key="edit"), sg.Button("Delete", key="delete"),
+                          sg.Button("Update", key="update")],
                          [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.SCALE)],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
                          [sg.Text("x2:"), sg.Input(key="x2", size=5), sg.Text("y2:"), sg.Input(key="y2", size=5)],
@@ -32,6 +37,10 @@ def draw_scene_tab() -> list[list]:
 
 
 def single_ray_tab() -> list[list]:
+    """
+    Function that generates pysimplegui layout for single-ray mode
+    """
+
     single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)],
                      [sg.Text("Distance step"), sg.Input(f"{gb.SCENE_GRID[0]}", key="step", size=5)],
                      [sg.Button("Draw ray", key="draw_ray"), sg.Button("Calculate", key="calc")]]
@@ -39,22 +48,35 @@ def single_ray_tab() -> list[list]:
     return single_layout
 
 
+def multi_ray_tab() -> list[list]:
+    """
+        Function that generates pysimplegui layout for multi-ray mode
+    """
+    multi_layout = [[sg.Button("Add ray", key="add_ray_multi"), sg.Button("Delete ray", key="delete_ray_multi")],
+                    [sg.Button("Calculate", key="calc_multi")]]
+
+    return multi_layout
+
+
 def layout() -> list[list]:
     """
      Returns layout of main window.
     """
     side_menu = [[sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab"),
-                  sg.Column(single_ray_tab(), visible=False, key="single_ray_tab")]]
+                  sg.Column(single_ray_tab(), visible=False, key="single_ray_tab"),
+                  sg.Column(multi_ray_tab(), visible=False, key="multi_ray_tab")]]
 
     top_menu = [sg.Button('Draw scene', key="draw_scene"),
-                sg.Button("Single ray", key="single_ray")]
+                sg.Button("Single ray", key="single_ray"),
+                sg.Button("Multi ray", key="multi_ray")]
 
     scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
                        key="graph", enable_events=True)],
              [sg.Canvas(key='plot_canvas', size=(gb.SCENE_SIZE[1], 200))]]
 
     main_layout = [[top_menu],
-                   [sg.Column(side_menu), sg.Column(scene)]]
+                   [sg.HSeparator()],
+                   [sg.Column(side_menu, vertical_alignment="top"), sg.Column(scene)]]
 
     return main_layout
 

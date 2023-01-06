@@ -10,10 +10,40 @@
   "Walls": [
     {
       "points": [
-        80,
-        240,
-        80,
-        60
+        40,
+        260,
+        40,
+        40
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    },
+    {
+      "points": [
+        40,
+        40,
+        360,
+        40
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    },
+    {
+      "points": [
+        360,
+        40,
+        360,
+        260
+      ],
+      "width": 1.0,
+      "material": "Brick"
+    },
+    {
+      "points": [
+        360,
+        260,
+        40,
+        260
       ],
       "width": 1.0,
       "material": "Brick"
@@ -21,29 +51,9 @@
     {
       "points": [
         80,
-        60,
         220,
-        60
-      ],
-      "width": 1.0,
-      "material": "Brick"
-    },
-    {
-      "points": [
-        220,
-        60,
-        220,
-        240
-      ],
-      "width": 1.0,
-      "material": "Brick"
-    },
-    {
-      "points": [
-        220,
-        240,
-        80,
-        240
+        160,
+        220
       ],
       "width": 1.0,
       "material": "Brick"
@@ -52,11 +62,25 @@
   "Transmitters": [
     {
       "point": [
-        120,
+        80,
         140
       ],
       "power": 1.0,
       "freq": 1000000.0
+    }
+  ],
+  "Receivers": [
+    {
+      "point": [
+        300,
+        200
+      ]
+    },
+    {
+      "point": [
+        300,
+        140
+      ]
     }
   ]
 }

@@ -50,7 +50,7 @@ class Wall:
 
 class Transmitter:
     def __init__(self,
-                 point: tuple[int, int],
+                 point: tuple[float, float],
                  graph_id: int,
                  power: float,
                  freq: float):
@@ -59,3 +59,11 @@ class Transmitter:
         self.graph_id = graph_id
         self.freq = freq
         self.lam = 3e8/freq
+
+
+class Receiver:
+    def __init__(self,
+                 point: tuple[float, float],
+                 graph_id: int):
+        self.point = point
+        self.graph_id = graph_id

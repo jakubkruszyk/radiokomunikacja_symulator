@@ -1,7 +1,7 @@
 import json
 import PySimpleGUI as sg
 import globals as gb
-from props import Material, Wall, Transmitter
+from props import Material, Wall, Transmitter, Receiver
 
 
 def save_scene(walls: list[Wall],
@@ -16,6 +16,7 @@ def save_scene(walls: list[Wall],
     walls_list = list()
     materials_list = list()
     transmitters_list = list()
+    receivers_list = list()
     for wall in walls:
         wall_dict = {
             "points": wall.points,
@@ -35,11 +36,18 @@ def save_scene(walls: list[Wall],
         }
         transmitters_list.append(transmitter_dict)
 
+    for receiver in gb.receivers:
+        receiver_dict = {
+            "point": receiver.point,
+        }
+        receivers_list.append(receiver_dict)
+
     combined_list = {
         "Scale": gb.SCALE,
         "Materials": materials_list,
         "Walls": walls_list,
-        "Transmitters": transmitters_list
+        "Transmitters": transmitters_list,
+        "Receivers": receivers_list
     }
 
     path = sg.popup_get_file("Choose file:", save_as=True, default_extension=".json")
@@ -82,6 +90,13 @@ def load_scene():
             graph_id = gb.graph.draw_point(point, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
             transmitters.append(Transmitter(point, graph_id, power, freq))
 
+        receivers = list()
+        for receiver in file_content["Receivers"]:
+            point = receiver["point"]
+            graph_id = gb.graph.draw_point(point, gb.RECEIVER_SIZE, color=gb.RECEIVER_COLOR)
+            receivers.append(Receiver(point, graph_id))
+
         # update globals
         gb.walls = walls
         gb.transmitters = transmitters
+        gb.receivers = receivers
