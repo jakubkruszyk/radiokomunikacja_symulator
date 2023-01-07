@@ -1,5 +1,5 @@
 import window
-from routines import single_ray_routine, draw_scene_routine, multi_ray_routine, clear_rays
+from routines import single_ray_routine, draw_scene_routine, multi_ray_routine, clear_rays, diffraction_routine
 import globals as gb
 import PySimpleGUI as sg
 
@@ -25,11 +25,14 @@ while True:
     elif gb.current_mode == "multi_ray":
         multi_ray_routine(app, event, values)
 
+    elif gb.current_mode == "diffraction":
+        diffraction_routine(app, event, values)
+
     # ==================================================================================================================
     # common routines
     # ==================================================================================================================
     # change mode
-    if event in ("draw_scene", "single_ray", "multi_ray"):
+    if event in ("draw_scene", "single_ray", "multi_ray", "diffraction"):
         app[f"{event}_tab"].update(visible=True)
         app[f"{gb.current_mode}_tab"].update(visible=False)
         gb.current_mode = event

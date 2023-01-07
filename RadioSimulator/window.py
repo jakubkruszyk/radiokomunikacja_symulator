@@ -58,17 +58,27 @@ def multi_ray_tab() -> list[list]:
     return multi_layout
 
 
+def diffraction_tab() -> list[list]:
+    """
+        Function that generates pysimplegui layout for diffraction mode
+    """
+    diff_layout = [[]]
+    return diff_layout
+
+
 def layout() -> list[list]:
     """
      Returns layout of main window.
     """
     side_menu = [[sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab"),
                   sg.Column(single_ray_tab(), visible=False, key="single_ray_tab"),
-                  sg.Column(multi_ray_tab(), visible=False, key="multi_ray_tab")]]
+                  sg.Column(multi_ray_tab(), visible=False, key="multi_ray_tab"),
+                  sg.Column(diffraction_tab(), visible=False, key="diffraction_tab")]]
 
     top_menu = [sg.Button('Draw scene', key="draw_scene"),
                 sg.Button("Single ray", key="single_ray"),
-                sg.Button("Multi ray", key="multi_ray")]
+                sg.Button("Multi ray", key="multi_ray"),
+                sg.Button("Diffraction", key="diffraction")]
 
     scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
                        key="graph", enable_events=True)],
