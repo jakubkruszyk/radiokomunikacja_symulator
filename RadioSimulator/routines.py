@@ -127,6 +127,9 @@ def draw_scene_button_update(app, active):
     app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["calc_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["delete_ray_diff"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["add_ray_diff"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["calc_diff"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app[active].update(button_color=gb.BUTTON_ACTIVE_COLOR)
 
 
@@ -422,4 +425,53 @@ def multi_ray_power():
 # Diffraction simulation
 # ======================================================================================================================
 def diffraction_routine(app, event, values):
-    pass
+    if event in ("add_ray_diff", "delete_ray_diff", "calc_diff"):
+        draw_scene_button_update(app, event)
+        gb.current_sub_mode = event
+        gb.last_click = None
+
+    elif event == "graph" and gb.current_sub_mode == "add_ray_diff" and not gb.rays:
+        figures = gb.graph.get_figures_at_location(values[event])
+        receivers_list = [r for r in gb.receivers if r.graph_id in figures]
+        wall_list = [wall for wall in gb.walls if wall.graph_id in figures]
+        transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+
+        if not gb.selected_t:
+            if transmitter_list:
+                gb.selected_t = transmitter_list[0]
+
+        elif not gb.diff_point:
+            if wall_list:
+                point = values[event]
+                points_list = []
+                for wall in wall_list:
+                    if point_point_distance(point, wall.points[0:2]) < gb.DIFFRACTION_POINT_MARGIN:
+                        points_list.append(wall.points[0:2])
+                    elif point_point_distance(point, wall.points[2:]) < gb.DIFFRACTION_POINT_MARGIN:
+                        points_list.append(wall.points[2:])
+
+                gb.diff_point = points_list[0] if points_list else None
+
+        elif not gb.selected_r1:
+            if receivers_list:
+                gb.selected_r1 = receivers_list[0]
+                lines = [gb.graph.draw_line(gb.selected_t.point, gb.diff_point,
+                                            width=gb.RAY_SIZE, color=gb.RAY_COLOR),
+                         gb.graph.draw_line(gb.diff_point, gb.selected_r1.point,
+                                            width=gb.RAY_SIZE, color=gb.RAY_COLOR),
+                         gb.graph.draw_line(gb.selected_t.point, gb.selected_r1.point,
+                                            width=gb.RAY_SIZE, color=gb.RAY_COLOR)]
+                gb.rays.append(Ray(gb.selected_t, (1, 1)))
+                gb.rays[-1].graph_ids = lines
+
+    elif event == "graph" and gb.current_sub_mode == "delete_ray_diff":
+        figures = gb.graph.get_figures_at_location(values[event])
+        for ray in gb.rays:
+            test = [line for line in ray.graph_ids if line in figures]
+            if any(test):
+                for graph_id in ray.graph_ids:
+                    gb.graph.delete_figure(graph_id)
+                gb.rays.remove(ray)
+
+    elif event == "graph" and gb.current_sub_mode == "calc_diff":
+        pass

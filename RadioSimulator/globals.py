@@ -28,6 +28,8 @@ FLOAT_COMP = 0.05
 
 MULTI_RAY_STEP = 300
 
+DIFFRACTION_POINT_MARGIN = 10
+
 # ======================================================================================================================
 # Global variables
 # ======================================================================================================================
@@ -52,6 +54,7 @@ last_click = None
 selected_t = None
 selected_r1 = None
 selected_r2 = None
+diff_point = None
 
 # draw scene mode variables
 edit_prop = None
