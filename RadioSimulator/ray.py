@@ -2,8 +2,7 @@ import math
 import cmath
 
 from props import Transmitter, Wall
-from geometrics import intersection2, reflection_vec, point_point_distance, vec_normalize, point_on_line, \
-                       point_mirror_line
+from geometrics import *
 from globals import SCENE_SIZE
 
 
@@ -226,6 +225,46 @@ class Ray:
 
         return alpha/dist_sum * cmath.exp(-2j*math.pi*self.transmitter.freq*dist_sum/3e8)
 
+    def get_diffraction(self,
+                        diff_point: tuple[float, float],
+                        endpoint: tuple[float, float],
+                        walls: list[Wall]) -> (complex, float):
+        """
+        Method that will calculate distance coefficient and additional attenuation from transmitter to given endpoint.
+        If endpoint is in line-of-sight result will be the same to any get_coef method.
+        If endpoint is not in LOS, diffraction will be calculated.
+
+        Args:
+            diff_point: point where diffraction should happen
+            endpoint: destination point for ray
+            walls: list of walls that ray may collide with
+
+        Returns:
+            complex distance coefficient and additional attenuation in [dB]
+        """
+        # check if endpoint is in LOS
+        x0, y0 = self.transmitter.point
+        x2, y2 = endpoint
+        dx = x2 - x0
+        dy = y2 - y0
+        intersections = [(intersection2(wall.points, (x0, y0, x2, y2)), wall) for wall in walls]
+        intersections = [point for point in intersections if check_direction((dx, dy), (x0, y0), point[0])]
+        intersections = [point for point in intersections
+                         if point_point_distance((x0, y0), point[0]) < point_point_distance((x0, y0), endpoint)]
+        # endpoint in LOS
+        if not intersections:
+            dist = point_point_distance((x0, y0), endpoint)
+            return 1/dist * cmath.exp(2j * math.pi * self.transmitter.freq * dist/3e8), 0
+
+        # endpoint in NLOS
+        d1 = point_point_distance(self.transmitter.point, diff_point)
+        d2 = point_point_distance(diff_point, endpoint)
+        h = point_line_distance(diff_point, (x0, y0, x2, y2))
+        v = h * math.sqrt(2/self.transmitter.lam * (1/d1 + 1/d2))
+        c = 6.9 + 20*math.log10(math.sqrt((v-0.1)**2 + 1) + v - 0.1)  # [dB]
+        coef = 1/(d1+d2) * cmath.exp(2j * math.pi * self.transmitter.freq * (d1+d2)/3e8)
+        return coef, c
+
 
 # ======================================================================================================================
 # Helper functions
@@ -266,3 +305,31 @@ def check_direction(vec: tuple[float, float],
             (vec[1] > 0 and new_point[1] > last_point[1] or
              vec[1] < 0 and new_point[1] < last_point[1] or
              vec[1] == 0 and new_point[1] == last_point[1]))
+
+
+def get_diffraction_power(ray: Ray,
+                          diff_point: tuple[float, float],
+                          endpoint: tuple[float, float],
+                          walls: list[Wall],
+                          mode: bool = False) -> float:
+    """
+    Wrapper for get_diffraction method of Ray class. Depend on mode will return distance coefficient or attenuation.
+
+    Args:
+        ray: Ray that will be propagated
+        diff_point: point where diffraction will take place
+        endpoint: point where ray should end
+        walls: list of wall that ray may collide with
+        mode: default is False
+
+    Returns:
+        if mode = True: Attenuation of just diffraction
+        else: Distance coefficient in linear form
+    """
+    coefficient, attenuation = ray.get_diffraction(diff_point, endpoint, walls)
+    if mode:  # [dB]
+        return attenuation
+
+    else:  # linear
+        a_linear = 10**(attenuation/10)
+        return coefficient * a_linear

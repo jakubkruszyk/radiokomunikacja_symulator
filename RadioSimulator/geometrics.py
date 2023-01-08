@@ -55,10 +55,11 @@ def intersection(line1: tuple[int, int, int, int],
                  line2: tuple[int, int, int, int]) -> tuple[float, float]:
     """
     Returns x and y coordinates of intersection of two lines.
+    intersection2 is more efficient.
 
     Args:
-        line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
-        line2(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of second line
+        line1: tuple of x1, y1, x2 and y2 coordinates of first line
+        line2: tuple of x1, y1, x2 and y2 coordinates of second line
 
     Returns:
         tuple[float, float]
@@ -72,14 +73,14 @@ def intersection(line1: tuple[int, int, int, int],
     return x, y
 
 
-def intersection2(line1: tuple[int, int, int, int],
-                  line2: tuple[int, int, int, int]) -> tuple[float, float]:
+def intersection2(line1: tuple[float, float, float, float],
+                  line2: tuple[float, float, float, float]) -> tuple[float, float]:
     """
         Returns x and y coordinates of intersection of two lines.
 
         Args:
-            line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
-            line2(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of second line
+            line1: tuple of x1, y1, x2 and y2 coordinates of first line
+            line2: tuple of x1, y1, x2 and y2 coordinates of second line
 
         Returns:
             tuple[float, float]
@@ -93,8 +94,8 @@ def intersection2(line1: tuple[int, int, int, int],
     return px, py
 
 
-def point_line_distance(point: tuple[int, int],
-                        line: tuple[int, int, int, int]) -> float:
+def point_line_distance(point: tuple[float, float],
+                        line: tuple[float, float, float, float]) -> float:
     """
     Return minimal distance from point to line
 
@@ -166,7 +167,7 @@ def point_on_line(line: tuple[float, float, float, float],
         Checks if given point is located on given line fragment.
 
         Args:
-            line: Wall object to compare to.
+            line: tuple containing two points that form a line (x1, y1, x2, y2) that point will be compared to.
             point: Point in space that will be compared to Wall
 
         Returns:
