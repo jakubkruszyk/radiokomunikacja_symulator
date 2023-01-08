@@ -38,5 +38,9 @@ while True:
         gb.current_mode = event
         gb.current_sub_mode = None
         gb.last_click = None
+        gb.selected_t = None
+        gb.selected_r1 = None
+        gb.selected_r2 = None
+        gb.diff_point = None
         clear_rays()
         gb.reflection_wall.clear()

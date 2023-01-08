@@ -63,7 +63,10 @@ def diffraction_tab() -> list[list]:
         Function that generates pysimplegui layout for diffraction mode
     """
     diff_layout = [[sg.Button("Add ray", key="add_ray_diff"), sg.Button("Delete ray", key="delete_ray_diff")],
-                   [sg.Button("Calculate", key="calc_diff")]]
+                   [sg.Button("Calculate", key="calc_diff")],
+                   [sg.Text("Mode:")],
+                   [sg.Radio("Linear", "diff_radio", key="diff_radio_lin", default=True)],
+                   [sg.Radio("dB", "diff_radio", key="diff_radio_db")]]
     return diff_layout
 
 

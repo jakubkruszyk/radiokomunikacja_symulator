@@ -2,7 +2,8 @@ import math
 import cmath
 
 from props import Transmitter, Wall
-from geometrics import *
+from geometrics import intersection2, vec_normalize, point_point_distance, point_mirror_line, reflection_vec, \
+    point_on_line, point_line_distance
 from globals import SCENE_SIZE
 
 
@@ -48,7 +49,7 @@ class Ray:
                     continue
                 # calculate intersection and check if result is placed on wall
                 intersection = intersection2((*point1, *point2), wall.points)
-                if check_on_wall(wall, intersection):
+                if intersection and check_on_wall(wall, intersection):
                     intersections.append((intersection, wall))
 
             # check if points are in desired direction
@@ -81,7 +82,7 @@ class Ray:
                         continue
                     # calculate intersection and check if result is placed on wall
                     intersection = intersection2((*point1, *point2), edge)
-                    if point_on_line(edge, intersection):
+                    if intersection and point_on_line(edge, intersection):
                         intersections.append((intersection, None))
                 # there should be only one result
                 intersections = [i for i in intersections if check_direction(self.vec, point1, i[0])]
@@ -117,7 +118,7 @@ class Ray:
         reflections = [self.transmitter.point]
         for point, wall in zip(points, walls):
             new_point = intersection2(wall.points, (*point, *reflections[-1]))
-            if not check_on_wall(wall, new_point):
+            if new_point and not check_on_wall(wall, new_point):
                 return
             reflections.append(new_point)
 
@@ -248,7 +249,9 @@ class Ray:
         dx = x2 - x0
         dy = y2 - y0
         intersections = [(intersection2(wall.points, (x0, y0, x2, y2)), wall) for wall in walls]
-        intersections = [point for point in intersections if check_direction((dx, dy), (x0, y0), point[0])]
+        intersections = [point for point in intersections
+                         if point[0] is not None and
+                         check_direction((dx, dy), (x0, y0), point[0]) and point_on_line(point[1].points, point[0])]
         intersections = [point for point in intersections
                          if point_point_distance((x0, y0), point[0]) < point_point_distance((x0, y0), endpoint)]
         # endpoint in LOS
@@ -331,5 +334,5 @@ def get_diffraction_power(ray: Ray,
         return attenuation
 
     else:  # linear
-        a_linear = 10**(attenuation/10)
+        a_linear = 10**(-attenuation/10)
         return coefficient * a_linear
