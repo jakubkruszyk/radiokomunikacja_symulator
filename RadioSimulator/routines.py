@@ -181,7 +181,7 @@ def draw_figure(canvas, figure):
 
 def draw_plot(y: list | ndarray, x: list | ndarray, canvas):
     fig = plt.figure(figsize=(5, 2))
-    plt.plot(y, x)
+    fig.add_subplot(111).plot(x, y)
     plt.grid()
     draw_figure(canvas, fig)
 
@@ -481,4 +481,3 @@ def diffraction_routine(app, event, values):
             power_ref = gb.rays[-1].get_power_ref()
             power = [power_ref * abs(coef)**2 for coef in coefs]
             draw_plot(power, dist_space, app["plot_canvas"].TKCanvas)
-
