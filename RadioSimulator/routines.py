@@ -329,8 +329,17 @@ def single_ray_routine(app, event, values):
         if not coefs:
             return
 
+        # calculate power array
         power_ref = gb.rays[-1].get_power_ref()
         power_values = [power_ref * abs(c)**2 for c in coefs[1:]]
+
+        # convert if selected so
+        if values["single_radio_dbm"]:
+            power_values = [10*math.log10(p/0.001) for p in power_values]
+
+        elif values["single_radio_db"]:
+            initial_power = gb.rays[-1].transmitter.power
+            power_values = [10*math.log10(p/initial_power) for p in power_values]
 
         # plot results
         x_space = [i*step for i in range(len(power_values))]
@@ -405,8 +414,16 @@ def multi_ray_routine(app, event, values):
         if not receivers_list:
             return
         gb.selected_r2 = receivers_list[0]
-        values, space = multi_ray_power()
-        draw_plot(values, space, app["plot_canvas"].TKCanvas)
+        p_values, space = multi_ray_power()
+        # convert if selected so
+        if values["multi_radio_db"]:
+            initial_power = gb.rays[-1].transmitter.power
+            p_values = [10*math.log10(p/initial_power) for p in p_values]
+
+        elif values["multi_radio_dbm"]:
+            p_values = [10*math.log10(p/0.001) for p in p_values]
+
+        draw_plot(p_values, space, app["plot_canvas"].TKCanvas)
 
 
 # ======================================================================================================================
