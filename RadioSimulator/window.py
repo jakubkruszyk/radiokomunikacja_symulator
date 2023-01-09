@@ -43,7 +43,10 @@ def single_ray_tab() -> list[list]:
 
     single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)],
                      [sg.Text("Distance step"), sg.Input(f"{gb.SCENE_GRID[0]}", key="step", size=5)],
-                     [sg.Button("Draw ray", key="draw_ray"), sg.Button("Calculate", key="calc")]]
+                     [sg.Button("Draw ray", key="draw_ray"), sg.Button("Calculate", key="calc")],
+                     [sg.Radio("Linear", "single_radio", key="single_radio_lin", default=True)],
+                     [sg.Radio("dBm", "single_radio", key="single_radio_dbm")],
+                     [sg.Radio("dB", "single_radio", key="single_radio_db")]]
 
     return single_layout
 
@@ -53,9 +56,25 @@ def multi_ray_tab() -> list[list]:
         Function that generates pysimplegui layout for multi-ray mode
     """
     multi_layout = [[sg.Button("Add ray", key="add_ray_multi"), sg.Button("Delete ray", key="delete_ray_multi")],
-                    [sg.Button("Calculate", key="calc_multi")]]
+                    [sg.Button("Calculate", key="calc_multi")],
+                    [sg.Radio("Linear", "multi_radio", key="multi_radio_lin", default=True)],
+                    [sg.Radio("dBm", "multi_radio", key="multi_radio_dbm")],
+                    [sg.Radio("dB", "multi_radio", key="multi_radio_db")]]
 
     return multi_layout
+
+
+def diffraction_tab() -> list[list]:
+    """
+        Function that generates pysimplegui layout for diffraction mode
+    """
+    diff_layout = [[sg.Button("Add ray", key="add_ray_diff"), sg.Button("Delete ray", key="delete_ray_diff")],
+                   [sg.Button("Calculate", key="calc_diff")],
+                   [sg.Text("Mode:")],
+                   [sg.Radio("Linear", "diff_radio", key="diff_radio_lin", default=True)],
+                   [sg.Radio("dBm", "diff_radio", key="diff_radio_dbm")],
+                   [sg.Radio("dB", "diff_radio", key="diff_radio_db")]]
+    return diff_layout
 
 
 def layout() -> list[list]:
@@ -64,11 +83,13 @@ def layout() -> list[list]:
     """
     side_menu = [[sg.Column(draw_scene_tab(), visible=True, key="draw_scene_tab"),
                   sg.Column(single_ray_tab(), visible=False, key="single_ray_tab"),
-                  sg.Column(multi_ray_tab(), visible=False, key="multi_ray_tab")]]
+                  sg.Column(multi_ray_tab(), visible=False, key="multi_ray_tab"),
+                  sg.Column(diffraction_tab(), visible=False, key="diffraction_tab")]]
 
     top_menu = [sg.Button('Draw scene', key="draw_scene"),
                 sg.Button("Single ray", key="single_ray"),
-                sg.Button("Multi ray", key="multi_ray")]
+                sg.Button("Multi ray", key="multi_ray"),
+                sg.Button("Diffraction", key="diffraction")]
 
     scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
                        key="graph", enable_events=True)],

@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from globals import FLOAT_COMP
 
 
@@ -55,10 +56,11 @@ def intersection(line1: tuple[int, int, int, int],
                  line2: tuple[int, int, int, int]) -> tuple[float, float]:
     """
     Returns x and y coordinates of intersection of two lines.
+    intersection2 is more efficient.
 
     Args:
-        line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
-        line2(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of second line
+        line1: tuple of x1, y1, x2 and y2 coordinates of first line
+        line2: tuple of x1, y1, x2 and y2 coordinates of second line
 
     Returns:
         tuple[float, float]
@@ -72,29 +74,32 @@ def intersection(line1: tuple[int, int, int, int],
     return x, y
 
 
-def intersection2(line1: tuple[int, int, int, int],
-                  line2: tuple[int, int, int, int]) -> tuple[float, float]:
+def intersection2(line1: tuple[float, float, float, float],
+                  line2: tuple[float, float, float, float]) -> tuple[float, float] | None:
     """
         Returns x and y coordinates of intersection of two lines.
 
         Args:
-            line1(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of first line
-            line2(tuple[int, int, int, int]): tuple of x1, y1, x2 and y2 coordinates of second line
+            line1: tuple of x1, y1, x2 and y2 coordinates of first line
+            line2: tuple of x1, y1, x2 and y2 coordinates of second line
 
         Returns:
-            tuple[float, float]
+            tuple[float, float] or None when lines are parallel
         """
     x1, y1, x2, y2 = line1
     x3, y3, x4, y4 = line2
     # formulas from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
     denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
+    if not denominator:
+        return None
+
     px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denominator
     py = ((x1*y2 - y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4)) / denominator
     return px, py
 
 
-def point_line_distance(point: tuple[int, int],
-                        line: tuple[int, int, int, int]) -> float:
+def point_line_distance(point: tuple[float, float],
+                        line: tuple[float, float, float, float]) -> float:
     """
     Return minimal distance from point to line
 
@@ -166,7 +171,7 @@ def point_on_line(line: tuple[float, float, float, float],
         Checks if given point is located on given line fragment.
 
         Args:
-            line: Wall object to compare to.
+            line: tuple containing two points that form a line (x1, y1, x2, y2) that point will be compared to.
             point: Point in space that will be compared to Wall
 
         Returns:
@@ -198,3 +203,32 @@ def point_mirror_line(line: tuple[float, float, float, float],
     px_mirror = point[0] - 2*a*d
     py_mirror = point[1] - 2*b*d
     return px_mirror, py_mirror
+
+
+def distance_spaces(start: tuple[float, float],
+                    end: tuple[float, float],
+                    steps: int) -> (tuple[float], tuple[float], tuple[float]):
+    """
+    Function that returns evenly spaced arrays of x, y coordinates and total distance between start point and end point.
+
+    Args:
+        start: (x, y) coordinates of start-point
+        end: (x, y) coordinates of end-point
+        steps: number of desired segments
+
+    Returns:
+        x_axis, y_axis, distance arrays
+    """
+    xp = (start[0], end[0])
+    fp = (start[1], end[1])
+    dist_space = np.linspace(0, point_point_distance(start, end), steps)
+
+    if abs(end[0] - start[0]) > abs(end[1] - start[1]):
+        x_space = np.linspace(start[0], end[0], steps)
+        y_space = np.interp(x_space, xp, fp)
+
+    else:
+        y_space = np.linspace(start[1], end[1], steps)
+        x_space = np.interp(y_space, fp, xp)
+
+    return x_space, y_space, dist_space

@@ -1,19 +1,19 @@
 import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from numpy import linspace
+from numpy import linspace, interp, ndarray
 import globals as gb
 import math
 
 from props import Wall, Transmitter, Receiver, Material
-from ray import Ray
+from ray import Ray, get_diffraction_power
 from files import save_scene, load_scene
 from materials import materials_list
-from geometrics import point_point_distance
+from geometrics import point_point_distance, distance_spaces
 
 
 # ======================================================================================================================
-# Draw scene mode
+# Helper functions
 # ======================================================================================================================
 def point_quantization(point: tuple[int, int]):
     return (gb.SCENE_GRID[0] * math.floor(point[0] / gb.SCENE_GRID[0] + 0.5),
@@ -57,6 +57,12 @@ def draw_transmitter(event, values):
     except ValueError:
         freq = 1e6
     gb.transmitters.append(Transmitter(values_s, circle_id, power, freq))
+
+
+def draw_receiver(app, event, values):
+    values_s = point_quantization(values[event])
+    circle_id = gb.graph.draw_point(values_s, gb.RECEIVER_SIZE, color=gb.RECEIVER_COLOR)
+    gb.receivers.append(Receiver(values_s, circle_id))
 
 
 def clear_displayed_points(app):
@@ -127,6 +133,9 @@ def draw_scene_button_update(app, active):
     app["delete_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["add_ray_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app["calc_multi"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["delete_ray_diff"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["add_ray_diff"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
+    app["calc_diff"].update(button_color=gb.BUTTON_INACTIVE_COLOR)
     app[active].update(button_color=gb.BUTTON_ACTIVE_COLOR)
 
 
@@ -146,12 +155,55 @@ def delete_element(app, event, values):
         gb.walls.remove(walls[0])
 
 
-def draw_receiver(app, event, values):
-    values_s = point_quantization(values[event])
-    circle_id = gb.graph.draw_point(values_s, gb.RECEIVER_SIZE, color=gb.RECEIVER_COLOR)
-    gb.receivers.append(Receiver(values_s, circle_id))
+def draw_ray(ray: Ray):
+    sources = [ray.transmitter.point] + [line[0] for line in ray.reflections_list]
+    destinations = [line[0] for line in ray.reflections_list]
+    graph_ids = list()
+    for src, dst in zip(sources, destinations):
+        graph_ids.append(gb.graph.draw_line(src, dst, width=gb.RAY_SIZE, color=gb.RAY_COLOR))
+    ray.graph_ids = graph_ids
 
 
+def clear_rays():
+    if gb.rays:
+        for ray in gb.rays:
+            for graph_id in ray.graph_ids:
+                gb.graph.delete_figure(graph_id)
+        gb.rays.clear()
+
+
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    return figure_canvas_agg
+
+
+def draw_plot(y: list | ndarray, x: list | ndarray, canvas):
+    fig = plt.figure(figsize=(5, 2))
+    fig.add_subplot(111).plot(x, y)
+    plt.grid()
+    draw_figure(canvas, fig)
+
+
+def multi_ray_power():
+    x_space, y_space, dist_space = distance_spaces(gb.selected_r1.point, gb.selected_r2.point, gb.MULTI_RAY_STEP)
+    power_list = list()
+    for x, y in zip(x_space, y_space):
+        for ray in gb.rays:
+            ray.propagate_to_point((x, y), ray.forced_reflection_walls)
+        coefficients = [ray.get_coef_at_end() for ray in gb.rays]
+        power_ref = gb.rays[0].get_power_ref()
+        coefs_sum = sum(coefficients)
+        power = power_ref * abs(coefs_sum)**2
+        power_list.append(power)
+
+    return power_list, dist_space
+
+
+# ======================================================================================================================
+# Draw scene mode
+# ======================================================================================================================
 def draw_scene_routine(app, event, values):
     if event == "graph":
         if gb.current_sub_mode == "draw_l":
@@ -277,8 +329,17 @@ def single_ray_routine(app, event, values):
         if not coefs:
             return
 
+        # calculate power array
         power_ref = gb.rays[-1].get_power_ref()
         power_values = [power_ref * abs(c)**2 for c in coefs[1:]]
+
+        # convert if selected so
+        if values["single_radio_dbm"]:
+            power_values = [10*math.log10(p/0.001) for p in power_values]
+
+        elif values["single_radio_db"]:
+            initial_power = gb.rays[-1].transmitter.power
+            power_values = [10*math.log10(p/initial_power) for p in power_values]
 
         # plot results
         x_space = [i*step for i in range(len(power_values))]
@@ -307,68 +368,25 @@ def single_ray_routine(app, event, values):
                 gb.last_click = transmitter_list[0]
 
 
-def draw_ray(ray: Ray):
-    sources = [ray.transmitter.point] + [line[0] for line in ray.reflections_list]
-    destinations = [line[0] for line in ray.reflections_list]
-    graph_ids = list()
-    for src, dst in zip(sources, destinations):
-        graph_ids.append(gb.graph.draw_line(src, dst, width=gb.RAY_SIZE, color=gb.RAY_COLOR))
-    ray.graph_ids = graph_ids
-
-
-def clear_rays():
-    if gb.rays:
-        for ray in gb.rays:
-            for graph_id in ray.graph_ids:
-                gb.graph.delete_figure(graph_id)
-        gb.rays.clear()
-
-
-def draw_figure(canvas, figure):
-    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
-    return figure_canvas_agg
-
-
-def draw_plot(y: list, x: list, canvas):
-    fig = plt.figure(figsize=(5, 2))
-    plt.plot(y, x)
-    plt.grid()
-    draw_figure(canvas, fig)
-
-
 # ======================================================================================================================
 # Multi ray simulation
 # ======================================================================================================================
 def multi_ray_routine(app, event, values):
-    if event == "add_ray_multi":
+    if event in ("add_ray_multi", "delete_ray_multi", "calc_multi"):
         gb.current_sub_mode = event
         gb.last_click = None
         draw_scene_button_update(app, event)
-
-    elif event == "delete_ray_multi":
-        gb.current_sub_mode = event
-        gb.last_click = None
-        draw_scene_button_update(app, event)
-
-    elif event == "calc_multi":
-        draw_scene_button_update(app, event)
-        gb.current_sub_mode = event
-        gb.last_click = None
-
-        pass
 
     elif event == "graph" and gb.current_sub_mode == "add_ray_multi":
-        if gb.last_click:
+        if gb.selected_t:
             figures = gb.graph.get_figures_at_location(values[event])
             receivers_list = [r for r in gb.receivers if r.graph_id in figures]
             wall_list = [wall for wall in gb.walls if wall.graph_id in figures]
             if wall_list:
                 gb.reflection_wall.append(wall_list[0])
             elif receivers_list:
-                gb.selected_r1 = receivers_list[0].point
-                gb.rays.append(Ray(gb.last_click, (1, 1), 1))  # ap and vec doesn't matter here
+                gb.selected_r1 = receivers_list[0]
+                gb.rays.append(Ray(gb.selected_t, (1, 1), 1))  # ap and vec doesn't matter here
                 gb.rays[-1].forced_reflection_walls = gb.reflection_wall.copy()
                 gb.rays[-1].propagate_to_point(receivers_list[0].point, gb.reflection_wall)
                 draw_ray(gb.rays[-1])
@@ -379,7 +397,6 @@ def multi_ray_routine(app, event, values):
             figures = gb.graph.get_figures_at_location(values[event])
             transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
             if transmitter_list:
-                gb.last_click = transmitter_list[0]
                 gb.selected_t = transmitter_list[0]
 
     elif event == "graph" and gb.current_sub_mode == "delete_ray_multi":
@@ -396,23 +413,88 @@ def multi_ray_routine(app, event, values):
         receivers_list = [r for r in gb.receivers if r.graph_id in figures]
         if not receivers_list:
             return
-        gb.selected_r2 = receivers_list[0].point
-        values = multi_ray_power()
-        space = linspace(0, point_point_distance(gb.selected_r1, gb.selected_r2), gb.MULTI_RAY_STEP).tolist()
-        draw_plot(values, space, app["plot_canvas"].TKCanvas)
+        gb.selected_r2 = receivers_list[0]
+        p_values, space = multi_ray_power()
+        # convert if selected so
+        if values["multi_radio_db"]:
+            initial_power = gb.rays[-1].transmitter.power
+            p_values = [10*math.log10(p/initial_power) for p in p_values]
+
+        elif values["multi_radio_dbm"]:
+            p_values = [10*math.log10(p/0.001) for p in p_values]
+
+        draw_plot(p_values, space, app["plot_canvas"].TKCanvas)
 
 
-def multi_ray_power():
-    x_space = linspace(gb.selected_r1[0], gb.selected_r2[0], gb.MULTI_RAY_STEP)
-    y_space = linspace(gb.selected_r1[1], gb.selected_r2[1], gb.MULTI_RAY_STEP)
-    power_list = list()
-    for x, y in zip(x_space, y_space):
+# ======================================================================================================================
+# Diffraction simulation
+# ======================================================================================================================
+def diffraction_routine(app, event, values):
+    if event in ("add_ray_diff", "delete_ray_diff", "calc_diff"):
+        draw_scene_button_update(app, event)
+        gb.current_sub_mode = event
+        gb.last_click = None
+
+    elif event == "graph" and gb.current_sub_mode == "add_ray_diff" and not gb.rays:
+        figures = gb.graph.get_figures_at_location(values[event])
+        receivers_list = [r for r in gb.receivers if r.graph_id in figures]
+        wall_list = [wall for wall in gb.walls if wall.graph_id in figures]
+        transmitter_list = [t for t in gb.transmitters if t.graph_id in figures]
+
+        if not gb.selected_t:
+            if transmitter_list:
+                gb.selected_t = transmitter_list[0]
+
+        elif not gb.diff_point:
+            if wall_list:
+                point = values[event]
+                points_list = []
+                for wall in wall_list:
+                    if point_point_distance(point, wall.points[0:2]) < gb.DIFFRACTION_POINT_MARGIN:
+                        points_list.append(wall.points[0:2])
+                    elif point_point_distance(point, wall.points[2:]) < gb.DIFFRACTION_POINT_MARGIN:
+                        points_list.append(wall.points[2:])
+
+                gb.diff_point = points_list[0] if points_list else None
+
+        elif not gb.selected_r1:
+            if receivers_list:
+                gb.selected_r1 = receivers_list[0]
+                lines = [gb.graph.draw_line(gb.selected_t.point, gb.diff_point,
+                                            width=gb.RAY_SIZE, color=gb.RAY_COLOR),
+                         gb.graph.draw_line(gb.diff_point, gb.selected_r1.point,
+                                            width=gb.RAY_SIZE, color=gb.RAY_COLOR),
+                         gb.graph.draw_line(gb.selected_t.point, gb.selected_r1.point,
+                                            width=gb.RAY_SIZE, color=gb.RAY_COLOR)]
+                gb.rays.append(Ray(gb.selected_t, (1, 1)))
+                gb.rays[-1].graph_ids = lines
+
+    elif event == "graph" and gb.current_sub_mode == "delete_ray_diff":
+        figures = gb.graph.get_figures_at_location(values[event])
         for ray in gb.rays:
-            ray.propagate_to_point((x, y), ray.forced_reflection_walls)
-        coefficients = [ray.get_coef_at_end() for ray in gb.rays]
-        power_ref = gb.rays[0].get_power_ref()
-        coefs_sum = sum(coefficients)
-        power = power_ref * abs(coefs_sum)**2
-        power_list.append(power)
+            test = [line for line in ray.graph_ids if line in figures]
+            if any(test):
+                for graph_id in ray.graph_ids:
+                    gb.graph.delete_figure(graph_id)
+                gb.rays.remove(ray)
 
-    return power_list
+    elif event == "graph" and gb.current_sub_mode == "calc_diff":
+        figures = gb.graph.get_figures_at_location(values[event])
+        receivers_list = [r for r in gb.receivers if r.graph_id in figures]
+        if not receivers_list:
+            return
+
+        gb.selected_r2 = receivers_list[0]
+        x_space, y_space, dist_space = distance_spaces(gb.selected_r1.point, gb.selected_r2.point, gb.MULTI_RAY_STEP)
+
+        if values["diff_radio_db"]:
+            attenuation = [get_diffraction_power(gb.rays[-1], gb.diff_point, (x, y), gb.walls, mode=True)
+                           for x, y in zip(x_space, y_space)]
+            draw_plot(attenuation, dist_space, app["plot_canvas"].TKCanvas)
+
+        elif values["diff_radio_lin"]:
+            coefs = [get_diffraction_power(gb.rays[-1], gb.diff_point, (x, y), gb.walls)
+                     for x, y in zip(x_space, y_space)]
+            power_ref = gb.rays[-1].get_power_ref()
+            power = [power_ref * abs(coef)**2 for coef in coefs]
+            draw_plot(power, dist_space, app["plot_canvas"].TKCanvas)
