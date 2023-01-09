@@ -5,7 +5,7 @@ from materials import materials_list
 
 def draw_scene_tab() -> list[list]:
     """
-        Function that generates pysimplegui layout for draw-scene mode
+        Function that generates PySimpleGUI layout for draw-scene mode
     """
     materials_names = [m.name for m in materials_list]
     properties_layout = [[sg.Text(name), sg.Text(value, key=f"property_{name}")]
@@ -38,7 +38,7 @@ def draw_scene_tab() -> list[list]:
 
 def single_ray_tab() -> list[list]:
     """
-    Function that generates pysimplegui layout for single-ray mode
+    Function that generates PySimpleGUI layout for single-ray mode
     """
 
     single_layout = [[sg.Text("AP"), sg.Input("3", key="AP", size=5)],
@@ -53,7 +53,7 @@ def single_ray_tab() -> list[list]:
 
 def multi_ray_tab() -> list[list]:
     """
-        Function that generates pysimplegui layout for multi-ray mode
+        Function that generates PySimpleGUI layout for multi-ray mode
     """
     multi_layout = [[sg.Button("Add ray", key="add_ray_multi"), sg.Button("Delete ray", key="delete_ray_multi")],
                     [sg.Button("Calculate", key="calc_multi")],
@@ -66,7 +66,7 @@ def multi_ray_tab() -> list[list]:
 
 def diffraction_tab() -> list[list]:
     """
-        Function that generates pysimplegui layout for diffraction mode
+        Function that generates PySimpleGUI layout for diffraction mode
     """
     diff_layout = [[sg.Button("Add ray", key="add_ray_diff"), sg.Button("Delete ray", key="delete_ray_diff")],
                    [sg.Button("Calculate", key="calc_diff")],
@@ -103,6 +103,13 @@ def layout() -> list[list]:
 
 
 def add_grid(graph):
+    """
+    Function that draw point shaped grid based on SCENE_SIZE and GRID_SIZE.
+    Dots color and size can be changed in globals.py
+
+    Args:
+        graph: graph to draw grid on
+    """
     for x in range(0, gb.SCENE_SIZE[0], gb.SCENE_GRID[0]):
         for y in range(0, gb.SCENE_SIZE[1], gb.SCENE_GRID[1]):
             graph.draw_point((x, y), gb.GRID_DOT_SIZE, color=gb.GRID_DOT_COLOR)

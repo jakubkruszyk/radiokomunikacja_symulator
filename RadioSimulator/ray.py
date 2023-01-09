@@ -10,7 +10,7 @@ from globals import SCENE_SIZE
 class Ray:
     """
     Class that represents single RF ray. It contains reference to its transmitter and vector of initial direction
-    of propagation from transmitter.
+    of propagation from transmitter. Vector and AP values only matter in single-ray mode.
     """
     def __init__(self,
                  transmitter: Transmitter,

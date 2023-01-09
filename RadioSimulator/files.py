@@ -4,20 +4,15 @@ import globals as gb
 from props import Material, Wall, Transmitter, Receiver
 
 
-def save_scene(walls: list[Wall],
-               transmitters: list[Transmitter]):
+def save_scene():
     """
-    Function that stores parameters of given Walls and Transmitters in json file. File location is chosen by popup.
-
-    Args:
-        walls: list of walls objects to be saved.
-        transmitters: list of transmitters objects to be saved.
+    Function that stores parameters of scene from globals.py in json file. File location is chosen by popup.
     """
     walls_list = list()
     materials_list = list()
     transmitters_list = list()
     receivers_list = list()
-    for wall in walls:
+    for wall in gb.walls:
         wall_dict = {
             "points": wall.points,
             "width": wall.width,
@@ -28,7 +23,7 @@ def save_scene(walls: list[Wall],
 
         walls_list.append(wall_dict)
 
-    for transmitter in transmitters:
+    for transmitter in gb.transmitters:
         transmitter_dict = {
             "point": transmitter.point,
             "power": transmitter.power,

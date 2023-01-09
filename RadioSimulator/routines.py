@@ -205,6 +205,10 @@ def multi_ray_power():
 # Draw scene mode
 # ======================================================================================================================
 def draw_scene_routine(app, event, values):
+    """
+    Draw scene mode event-loop routine
+    """
+
     if event == "graph":
         if gb.current_sub_mode == "draw_l":
             draw_wall(app, event, values)
@@ -310,6 +314,10 @@ def draw_scene_routine(app, event, values):
 # Single ray simulation
 # ======================================================================================================================
 def single_ray_routine(app, event, values):
+    """
+        Single ray mode event-loop routine
+    """
+
     if event == "draw_ray":
         # clear previous ray and enable drawing new one
         clear_rays()
@@ -372,6 +380,10 @@ def single_ray_routine(app, event, values):
 # Multi ray simulation
 # ======================================================================================================================
 def multi_ray_routine(app, event, values):
+    """
+        Multi ray mode event-loop routine
+    """
+
     if event in ("add_ray_multi", "delete_ray_multi", "calc_multi"):
         gb.current_sub_mode = event
         gb.last_click = None
@@ -430,6 +442,10 @@ def multi_ray_routine(app, event, values):
 # Diffraction simulation
 # ======================================================================================================================
 def diffraction_routine(app, event, values):
+    """
+        Diffraction mode event-loop routine
+    """
+
     if event in ("add_ray_diff", "delete_ray_diff", "calc_diff"):
         draw_scene_button_update(app, event)
         gb.current_sub_mode = event

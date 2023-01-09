@@ -33,9 +33,11 @@ while True:
     # ==================================================================================================================
     # change mode
     if event in ("draw_scene", "single_ray", "multi_ray", "diffraction"):
+        # change displayed side-tab
         app[f"{event}_tab"].update(visible=True)
         app[f"{gb.current_mode}_tab"].update(visible=False)
         gb.current_mode = event
+        # clear sub_mode variables
         gb.current_sub_mode = None
         gb.last_click = None
         gb.selected_t = None

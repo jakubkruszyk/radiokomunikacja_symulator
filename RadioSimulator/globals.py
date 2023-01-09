@@ -25,6 +25,7 @@ BUTTON_INACTIVE_COLOR = "#283b5b"
 # scene parameters
 SCALE = 1
 FLOAT_COMP = 0.05
+FLOAT_ZERO = 1e-6
 
 MULTI_RAY_STEP = 100
 

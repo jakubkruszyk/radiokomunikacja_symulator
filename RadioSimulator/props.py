@@ -3,7 +3,7 @@ import math
 
 
 Material = namedtuple("Material", ["name",
-                                   "alpha", "param2"])
+                                   "alpha"])
 
 
 class Wall:
@@ -49,6 +49,16 @@ class Wall:
 
 
 class Transmitter:
+    """
+    Dataclass representing RF transmitter.
+    Lambda is calculated based on given frequency.
+
+    Args:
+         point: (x, y) coordinates of transmitter(represented as point)
+         graph_id: id of PySimpleGUI point on graph
+         power: power value of transmitter in Watts
+         freq: frequency of generated wave in Hertz
+    """
     def __init__(self,
                  point: tuple[float, float],
                  graph_id: int,
@@ -62,6 +72,13 @@ class Transmitter:
 
 
 class Receiver:
+    """
+        Dataclass representing RF receiver.
+
+        Args:
+             point: (x, y) coordinates of receiver(represented as point)
+             graph_id: id of PySimpleGUI point on graph
+    """
     def __init__(self,
                  point: tuple[float, float],
                  graph_id: int):

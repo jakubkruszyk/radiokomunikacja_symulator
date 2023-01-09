@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from globals import FLOAT_COMP
+from globals import FLOAT_COMP, FLOAT_ZERO
 
 
 def abc(x1: int,
@@ -90,7 +90,7 @@ def intersection2(line1: tuple[float, float, float, float],
     x3, y3, x4, y4 = line2
     # formulas from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
     denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
-    if not denominator:
+    if denominator < FLOAT_ZERO:
         return None
 
     px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denominator
@@ -177,7 +177,7 @@ def point_on_line(line: tuple[float, float, float, float],
         Returns:
             True when point is on wall, else False
         """
-    # uses comparisions between distances from point to endpoints and between endpoints
+    # uses comparisons between distances from point to endpoints and between endpoints
     # https://stackoverflow.com/questions/17692922/check-is-a-point-x-y-is-between-two-points-drawn-on-a-straight-line
     endpoint1_dist = point_point_distance(line[0:2], point)
     endpoint2_dist = point_point_distance(line[2:], point)
