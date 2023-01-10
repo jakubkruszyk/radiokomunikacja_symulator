@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from numpy import linspace, interp, ndarray
+from numpy import ndarray
 import globals as gb
 import math
 

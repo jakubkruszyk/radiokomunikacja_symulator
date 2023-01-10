@@ -145,14 +145,23 @@ class Ray:
         alpha = 1
         dist_sum = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
         ref_idx = 0
+        # current path segment vector for alpha calculation
+        # reflection_list is list of pairs(point, Wall) so there is chosen first_pair -> point -> point element
+        current_vector = (self.reflections_list[0][0][0] - self.transmitter.point[0],
+                          self.reflections_list[0][0][1] - self.transmitter.point[1])
+
         while dist > dist_sum:
             ref_idx += 1
             if ref_idx > len(self.reflections_list)-1:
                 # given distance is outside calculated path
                 return 0, False
 
+            # calculate new distance range and alpha
             dist_sum += point_point_distance(self.reflections_list[ref_idx-1][0], self.reflections_list[ref_idx][0])
-            alpha *= self.reflections_list[ref_idx-1][1].material.alpha
+            new_alpha = self.reflections_list[ref_idx-1][1].reflection_coefficient(current_vector)
+            alpha *= new_alpha
+            current_vector = (self.reflections_list[ref_idx][0][0] - self.reflections_list[ref_idx-1][0][0],
+                              self.reflections_list[ref_idx][0][1] - self.reflections_list[ref_idx-1][0][1])
 
         path = alpha/dist * cmath.exp(-2j*math.pi*self.transmitter.freq*dist/3e8)
         return path, True
@@ -179,6 +188,10 @@ class Ray:
         dist_threshold = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
         ref_idx = 0
         dist_coefs = [1]
+        # current path segment vector for alpha calculation
+        # reflection_list is list of pairs(point, Wall) so there is chosen first_pair -> point -> point element
+        current_vector = (self.reflections_list[0][0][0] - self.transmitter.point[0],
+                          self.reflections_list[0][0][1] - self.transmitter.point[1])
         while True:
             if dist_sum > dist_threshold:
                 ref_idx += 1
@@ -187,7 +200,9 @@ class Ray:
                 else:
                     dist_threshold += point_point_distance(self.reflections_list[ref_idx - 1][0],
                                                            self.reflections_list[ref_idx][0])
-                    alpha *= self.reflections_list[ref_idx - 1][1].material.alpha
+                    alpha *= self.reflections_list[ref_idx-1][1].reflection_coefficient(current_vector)
+                    current_vector = (self.reflections_list[ref_idx][0][0] - self.reflections_list[ref_idx-1][0][0],
+                                      self.reflections_list[ref_idx][0][1] - self.reflections_list[ref_idx-1][0][1])
 
             # calculate coefficient
             coef = alpha / dist_sum * cmath.exp(-2j * math.pi * self.transmitter.freq * dist_sum / 3e8)
@@ -220,8 +235,15 @@ class Ray:
 
         dist_sum = point_point_distance(self.transmitter.point, self.reflections_list[0][0])
         alpha = 1
+        # current path segment vector for alpha calculation
+        # reflection_list is list of pairs(point, Wall) so there is chosen first_pair -> point -> point element
+        current_vector = (self.reflections_list[0][0][0] - self.transmitter.point[0],
+                          self.reflections_list[0][0][1] - self.transmitter.point[1])
+
         for i in range(1, len(self.reflections_list)):
-            alpha *= self.reflections_list[i-1][1].material.alpha
+            alpha *= self.reflections_list[i-1][1].reflection_coefficient(current_vector)
+            current_vector = (self.reflections_list[i][0][0] - self.reflections_list[i-1][0][0],
+                              self.reflections_list[i][0][1] - self.reflections_list[i-1][0][1])
             dist_sum += point_point_distance(self.reflections_list[i][0], self.reflections_list[i-1][0])
 
         return alpha/dist_sum * cmath.exp(-2j*math.pi*self.transmitter.freq*dist_sum/3e8)

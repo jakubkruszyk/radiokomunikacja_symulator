@@ -1,9 +1,13 @@
 from collections import namedtuple
 import math
+from globals import USE_TM
+from geometrics import vec_vec_angle
 
-
-Material = namedtuple("Material", ["name",
-                                   "alpha"])
+Material = namedtuple("Material", ["name",  # name of material
+                                   "alpha",  # custom values of reflection coefficient
+                                   "custom_alpha",  # flag if program should use alpha parameter (True, False)
+                                   "eta"  # relative permitivity of material
+                                   ])
 
 
 class Wall:
@@ -46,6 +50,29 @@ class Wall:
         if n[0] > 0:
             n = (-n[0], -n[1])
         return n
+
+    def reflection_coefficient(self,
+                               vec: tuple[float, float]):
+        """
+        Calculates reflection coefficient for given vector of incidence
+
+        """
+        if self.material.custom_alpha:
+            return self.material.alpha
+
+        # because angle between vectors is angle when vectors are connected with tails and with ray reflection
+        # ray vector is connected with normal vector head to tail we need to substract result from pi
+        theta = math.pi - vec_vec_angle(vec, self.normal)
+
+        if USE_TM:
+            r = (self.material.eta * math.cos(theta) - math.sqrt(self.material.eta - math.sin(theta)**2)) \
+                / (self.material.eta * math.cos(theta) + math.sqrt(self.material.eta - math.sin(theta)**2))
+
+        else:
+            r = (math.cos(theta) - math.sqrt(self.material.eta - math.sin(theta)**2)) \
+                / (math.cos(theta) + math.sqrt(self.material.eta - math.sin(theta)**2))
+
+        return r
 
 
 class Transmitter:

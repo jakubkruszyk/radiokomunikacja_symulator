@@ -8,10 +8,11 @@ SIMULATION_GRID = ()  # size of one rectangle of grid in pixels
 SCALE = 1  # scaling parameter for scene, scale = 1 means 1px = 1m
 
 # calculation parameters
-FLOAT_COMP = 0.05
-FLOAT_ZERO = 1e-6
-MULTI_RAY_STEP = 100
-DIFFRACTION_POINT_MARGIN = 10
+FLOAT_COMP = 0.05  # threshold for float <--> float comparision
+FLOAT_ZERO = 1e-6  # threshold for float <--> zero comparision
+MULTI_RAY_STEP = 100  # number of steps for simulation
+DIFFRACTION_POINT_MARGIN = 10  # margin of error for selecting wall endpoint
+USE_TM = False  # If True program will calculate reflection coefficient fot TM wave, else for TE
 
 # props colors and sizes - do not remove scale multiplier
 WALL_COLOR = "#ffffff"

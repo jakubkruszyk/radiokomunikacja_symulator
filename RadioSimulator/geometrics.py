@@ -232,3 +232,29 @@ def distance_spaces(start: tuple[float, float],
         x_space = np.interp(y_space, fp, xp)
 
     return x_space, y_space, dist_space
+
+
+def vec_vec_angle(vec1: tuple[float, float],
+                  vec2: tuple[float, float],
+                  degrees: bool = False) -> float:
+    """
+    Function that calculates angle between two vectors.
+
+    Args:
+        vec1: (dx, dy) first vector
+        vec2: (dx, dy) second vector
+        degrees: if True result will be in degrees, else radians
+
+    Returns:
+        angle between vectors in degrees or radians
+    """
+    # https://www.cuemath.com/geometry/angle-between-vectors/
+    vec1_mod = math.sqrt(vec1[0]**2 + vec1[1]**2)
+    vec2_mod = math.sqrt(vec2[0]**2 + vec2[1]**2)
+    dot_product = vec1[0]*vec2[0] + vec1[1]*vec2[1]
+    angle = math.acos(dot_product / (vec1_mod * vec2_mod))
+    if not degrees:
+        return angle
+    else:
+        angle_d = angle/math.pi * 180
+        return angle_d
