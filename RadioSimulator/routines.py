@@ -190,8 +190,8 @@ def draw_plot(y: list | ndarray, x: list | ndarray, canvas):
     draw_figure(canvas, fig)
 
 
-def multi_ray_power():
-    x_space, y_space, dist_space = distance_spaces(gb.selected_r1.point, gb.selected_r2.point, gb.MULTI_RAY_STEP)
+def multi_ray_power(steps: int):
+    x_space, y_space, dist_space = distance_spaces(gb.selected_r1.point, gb.selected_r2.point, steps)
     power_list = list()
     for x, y in zip(x_space, y_space):
         for ray in gb.rays:
@@ -430,7 +430,11 @@ def multi_ray_routine(app, event, values):
         if not receivers_list:
             return
         gb.selected_r2 = receivers_list[0]
-        p_values, space = multi_ray_power()
+        try:
+            step = int(values["diff_step"])
+        except ValueError:
+            step = gb.MULTI_RAY_STEP
+        p_values, space = multi_ray_power(step)
         # convert if selected so
         if values["multi_radio_db"]:
             initial_power = gb.rays[-1].transmitter.power
@@ -505,7 +509,12 @@ def diffraction_routine(app, event, values):
             return
 
         gb.selected_r2 = receivers_list[0]
-        x_space, y_space, dist_space = distance_spaces(gb.selected_r1.point, gb.selected_r2.point, gb.MULTI_RAY_STEP)
+        try:
+            step = int(values["diff_step"])
+        except ValueError:
+            step = gb.MULTI_RAY_STEP
+
+        x_space, y_space, dist_space = distance_spaces(gb.selected_r1.point, gb.selected_r2.point, step)
 
         if values["diff_radio_db"]:
             attenuation = [get_diffraction_power(gb.rays[-1], gb.diff_point, (x, y), gb.walls, mode=True)

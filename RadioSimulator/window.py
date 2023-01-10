@@ -60,6 +60,8 @@ def multi_ray_tab() -> list[list]:
     """
     multi_layout = [[sg.Button("Add ray", key="add_ray_multi"), sg.Button("Delete ray", key="delete_ray_multi")],
                     [sg.Button("Calculate", key="calc_multi")],
+                    [sg.Text("Steps:"), sg.Input(f"{gb.MULTI_RAY_STEP}", key="multi_ray_step", size=6)],
+                    [sg.Text("Mode:")],
                     [sg.Radio("Linear", "multi_radio", key="multi_radio_lin", default=True)],
                     [sg.Radio("dBm", "multi_radio", key="multi_radio_dbm")],
                     [sg.Radio("dB", "multi_radio", key="multi_radio_db")]]
@@ -73,6 +75,7 @@ def diffraction_tab() -> list[list]:
     """
     diff_layout = [[sg.Button("Add ray", key="add_ray_diff"), sg.Button("Delete ray", key="delete_ray_diff")],
                    [sg.Button("Calculate", key="calc_diff")],
+                   [sg.Text("Steps:"), sg.Input(f"{gb.MULTI_RAY_STEP}", key="diff_step", size=6)],
                    [sg.Text("Mode:")],
                    [sg.Radio("Linear", "diff_radio", key="diff_radio_lin", default=True)],
                    [sg.Radio("dBm", "diff_radio", key="diff_radio_dbm")],
