@@ -332,7 +332,7 @@ def single_ray_routine(app, event, values):
         try:
             step = float(values["step"])
         except ValueError:
-            step = gb.SCENE_GRID[0]
+            step = 1
 
         if not gb.rays:
             sg.popup_error("Draw ray first")
