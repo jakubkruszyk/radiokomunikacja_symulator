@@ -304,7 +304,7 @@ def draw_scene_routine(app, event, values):
             gb.edit_prop = None
 
     elif event == "save":
-        save_scene(gb.walls, gb.transmitters)
+        save_scene()
 
     elif event == "load":
         load_scene()

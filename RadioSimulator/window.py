@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import globals as gb
 from materials import materials_list
+from numpy import arange
 
 
 def draw_scene_tab() -> list[list]:
@@ -91,8 +92,8 @@ def layout() -> list[list]:
                 sg.Button("Multi ray", key="multi_ray"),
                 sg.Button("Diffraction", key="diffraction")]
 
-    scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), gb.SCENE_SIZE, background_color="black",
-                       key="graph", enable_events=True)],
+    scene = [[sg.Graph(gb.SCENE_SIZE, (0, 0), (gb.SCALE*gb.SCENE_SIZE[0], gb.SCALE*gb.SCENE_SIZE[1]),
+                       background_color="black", key="graph", enable_events=True)],
              [sg.Canvas(key='plot_canvas', size=(gb.SCENE_SIZE[1], 200))]]
 
     main_layout = [[top_menu],
@@ -110,6 +111,7 @@ def add_grid(graph):
     Args:
         graph: graph to draw grid on
     """
-    for x in range(0, gb.SCENE_SIZE[0], gb.SCENE_GRID[0]):
-        for y in range(0, gb.SCENE_SIZE[1], gb.SCENE_GRID[1]):
+
+    for x in arange(0, gb.SCENE_SIZE[0]*gb.SCALE, gb.SCENE_GRID[0]*gb.SCALE):
+        for y in arange(0, gb.SCENE_SIZE[1] * gb.SCALE, gb.SCENE_GRID[1] * gb.SCALE):
             graph.draw_point((x, y), gb.GRID_DOT_SIZE, color=gb.GRID_DOT_COLOR)

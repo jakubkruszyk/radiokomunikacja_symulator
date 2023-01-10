@@ -63,7 +63,8 @@ def load_scene():
     with open(path) as file:
         file_content = json.load(file)
         # read scene SCALE
-        gb.SCALE = int(file_content["Scale"])
+        new_scale = int(file_content["Scale"])
+        sf = gb.SCALE/new_scale  # scaling factor for conversion from file scale to scene scale
 
         # read materials
         materials = tuple(Material(*m) for m in file_content["Materials"])
@@ -71,15 +72,15 @@ def load_scene():
         # read walls
         walls = list()
         for wall in file_content['Walls']:
-            point1 = wall["points"][0:2]
-            point2 = wall["points"][2:]
+            point1 = (wall["points"][0]*sf, wall["points"][1]*sf)
+            point2 = (wall["points"][2]*sf, wall["points"][3]*sf)
             line_id = gb.graph.draw_line(point1, point2, width=gb.WALL_WIDTH, color=gb.WALL_COLOR)
             material = [m for m in materials if m.name == wall["material"]][0]
             walls.append(Wall(point1, point2, line_id, material, wall["width"]))
 
         transmitters = list()
         for transmitter in file_content["Transmitters"]:
-            point = transmitter["point"]
+            point = (transmitter["point"][0]*sf, transmitter["point"][1]*sf)
             power = transmitter["power"]
             freq = transmitter["freq"]
             graph_id = gb.graph.draw_point(point, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
@@ -87,7 +88,7 @@ def load_scene():
 
         receivers = list()
         for receiver in file_content["Receivers"]:
-            point = receiver["point"]
+            point = (receiver["point"][0]*sf, receiver["point"][1]*sf)
             graph_id = gb.graph.draw_point(point, gb.RECEIVER_SIZE, color=gb.RECEIVER_COLOR)
             receivers.append(Receiver(point, graph_id))
 

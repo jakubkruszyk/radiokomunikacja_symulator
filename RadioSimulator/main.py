@@ -11,9 +11,15 @@ gb.graph = app["graph"]
 window.add_grid(gb.graph)
 
 while True:
+    # window event read
     event, values = app.read(timeout=50)
+    # close event must be checked before anything else
     if event == sg.WIN_CLOSED:
         break
+
+    # graph coordinates scaling
+    if event == "graph":
+        print(values[event])
 
     # mode routines
     if gb.current_mode == "draw_scene":
