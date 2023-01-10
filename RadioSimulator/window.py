@@ -19,15 +19,17 @@ def draw_scene_tab() -> list[list]:
                                   default_value=materials_names[0])],
                         [sg.Column(properties_layout, key="properties_layout", scrollable=True, size=(150, 200))]]
 
-    draw_transmitter_layout = [[sg.Text("Transmitter power"), sg.Input(key="power", size=5, default_text="1")],
-                               [sg.Text("Frequency [Hz]"), sg.Input(key="freq", size=12, default_text="1000000")]]
+    draw_transmitter_layout = [[sg.Text("Power"), sg.Input(key="power", size=5, default_text="1")],
+                               [sg.Text("Frequency [Hz]"), sg.Input(key="freq", size=15, default_text="1000000000")],
+                               [sg.Radio("Watts", "draw_t_radio", key="draw_t_radio_w", default=True)],
+                               [sg.Radio("dBm", "draw_t_radio", key="draw_t_radio_dbm")]]
 
     draw_scene_layout = [[sg.Button("Reset scene", key="reset_scene")],
                          [sg.Button("Draw", key="draw"), sg.Button("Add T", key="transmitter"),
                           sg.Button("Add R", key="receiver")],
                          [sg.Button("Edit", key="edit"), sg.Button("Delete", key="delete"),
                           sg.Button("Update", key="update")],
-                         [sg.Text("Scale"), sg.Input(key="scale", size=5, default_text=gb.SCALE)],
+                         [sg.Text(f"Scale: {gb.SCALE}")],
                          [sg.Text("x1:"), sg.Input(key="x1", size=5), sg.Text("y1:"), sg.Input(key="y1", size=5)],
                          [sg.Text("x2:"), sg.Input(key="x2", size=5), sg.Text("y2:"), sg.Input(key="y2", size=5)],
                          [sg.Column(draw_line_layout, key="draw_line_layout", visible=True),

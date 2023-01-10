@@ -48,7 +48,11 @@ def draw_transmitter(event, values):
 
     circle_id = gb.graph.draw_point(values_s, gb.TRANSMITTER_SIZE, color=gb.TRANSMITTER_COLOR)
     try:
-        power = float(values["power"])
+        if values["draw_t_radio_dbm"]:
+            dbm = float(values["power"])
+            power = 10**(dbm/10) / 1000
+        else:
+            power = float(values["power"])
     except ValueError:
         power = 1
 
