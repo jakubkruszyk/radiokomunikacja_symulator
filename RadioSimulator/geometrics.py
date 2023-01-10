@@ -90,7 +90,7 @@ def intersection2(line1: tuple[float, float, float, float],
     x3, y3, x4, y4 = line2
     # formulas from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
     denominator = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4))
-    if denominator < FLOAT_ZERO:
+    if abs(denominator) < FLOAT_ZERO:
         return None
 
     px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4)) / denominator
