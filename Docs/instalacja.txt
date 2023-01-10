@@ -1,0 +1,8 @@
+Wymagana wersja Pythona minimum 3.10.x
+
+Aby móc korzystać z programu należy otworzyć główny folder zawierający plik requirements.txt w konsoli i użyć komendy:
+pip install -r requirements.txt
+
+W przypadku błędów proszę o kontakt z autorem.
+
+Po poprawnym zainstalowaniu pakietów program jest gotowy do pracy.
